@@ -1,7 +1,6 @@
 if __name__ == "__main__":
     try:
         import sys
-        import ffmpeg
         import functions
         import argparse
         import os
@@ -9,10 +8,30 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser(description="Аудиоредактор")
         subparsers = parser.add_subparsers()
 
-        # Первая команда
-        parser_find = subparsers.add_parser("название команды", help="Какая-то команда")
-        parser_find.add_argument("audio", help="Вставьте аудио")
-        parser_find.set_defaults(func=lambda args: print(functions.func(args.audio)))
+        #Команда convert
+        parser_convert = subparsers.add_parser("convert", help="Преобразовывает формат")
+        parser_convert.add_argument("audio", help="Вставьте аудио")
+        parser_convert.add_argument("ext", help="Формат")
+        parser_convert.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).convert_to(args.ext)))
+
+        #Команда cut
+        parser_cut = subparsers.add_parser("cut", help="Срез")
+        parser_cut.add_argument("audio", help="Вставьте аудио")
+        parser_cut.add_argument("start", help="Старт")
+        parser_cut.add_argument("stop", help="Стоп")
+        parser_cut.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).cut(args.start, args.stop)))
+
+        # Команда volume
+        parser_volume = subparsers.add_parser("volume", help="Изменение громкости")
+        parser_volume.add_argument("audio", help="Вставьте аудио")
+        parser_volume.add_argument("v", help="Громкость")
+        parser_volume.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).volume(args.v)))
+
+        # Команда speed
+        parser_speed = subparsers.add_parser("speed", help="Изменение скорости")
+        parser_speed.add_argument("audio", help="Вставьте аудио")
+        parser_speed.add_argument("speed", help="Скорость")
+        parser_speed.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).speed_up(args.speed)))
 
         # Обработка аргументов
         args = parser.parse_args()
