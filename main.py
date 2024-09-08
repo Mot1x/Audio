@@ -12,20 +12,21 @@ if __name__ == "__main__":
         parser_convert = subparsers.add_parser("convert", help="Преобразовывает формат")
         parser_convert.add_argument("audio", help="Вставьте аудио")
         parser_convert.add_argument("ext", help="Формат")
-        parser_convert.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).convert_to(args.ext)))
+        parser_convert.add_argument("-b", help="Битрейт звука (по умолчанию 44100)", default=44100, type=int)
+        parser_convert.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).convert_to(args.ext, args.b)))
 
         #Команда cut
         parser_cut = subparsers.add_parser("cut", help="Срез")
         parser_cut.add_argument("audio", help="Вставьте аудио")
-        parser_cut.add_argument("start", help="Старт")
-        parser_cut.add_argument("stop", help="Стоп")
+        parser_cut.add_argument('start', help="Старт", default=0)
+        parser_cut.add_argument('stop', help="Стоп", default=0)
         parser_cut.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).cut(args.start, args.stop)))
 
         # Команда volume
         parser_volume = subparsers.add_parser("volume", help="Изменение громкости")
         parser_volume.add_argument("audio", help="Вставьте аудио")
-        parser_volume.add_argument("v", help="Громкость")
-        parser_volume.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).volume(args.v)))
+        parser_volume.add_argument("volume", help="Громкость")
+        parser_volume.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).volume(args.volume)))
 
         # Команда speed
         parser_speed = subparsers.add_parser("speed", help="Изменение скорости")
