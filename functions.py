@@ -1,5 +1,6 @@
 import os
 import subprocess
+import re
 
 
 class FFmpeg:
@@ -22,7 +23,19 @@ class FFmpeg:
         self.edit_count += 1
 
     def set_output(self, ext=None):
-        return f'{self.file[:-4]}.{ext}' if ext else f'{self.file[:-4]} ({self.edit_count}){self.file[-4:]}'
+        path = os.path.dirname(os.path.abspath(__file__))
+        name = self.file.split("\\")[-1][:-4]
+        if len(name) >= 4:
+            ending_name = name[-4:]
+            match = re.search(r" \(\d\)$", ending_name)
+            if bool(match):
+                self.edit_count = int(name[-2]) + 1
+                name = name[:-4]
+            else:
+                os.makedirs(path + "\\" + name, exist_ok=True)
+        folder = name + "\\"
+        return path + "\\" + folder + f'{name}.{ext}' if ext \
+            else (path + "\\" + folder + f'{name} ({self.edit_count}){self.file[-4:]}')
 
     def convert_to(self, ext, bitrate):
         if self.is_correct_file() and self.file[-3:] in FFmpeg.exts and ext in FFmpeg.exts:
@@ -49,7 +62,7 @@ class FFmpeg:
         else:
             return False
 
-    def volume(self, volume):
+    def change_volume(self, volume):
         if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
             output = self.set_output()
             command = [FFmpeg.cmds, '-i', self.file, '-af', f'volume={volume}', '-y', output]
@@ -60,7 +73,7 @@ class FFmpeg:
 
     def speed_up(self, speed):
         if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
-            output = f'{self.file[:-4]} ({self.edit_count}){self.file[-4:]}'
+            output = self.set_output()
             command = [FFmpeg.cmds, '-i', os.path.abspath(self.file), '-af', f'rubberband=tempo={speed}', '-y',
                        output]
             p = subprocess.Popen(command)

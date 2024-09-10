@@ -31,7 +31,7 @@ if __name__ == "__main__":
         parser_volume = subparsers.add_parser("volume", help="Изменение громкости")
         parser_volume.add_argument("audio", help="Вставьте аудио")
         parser_volume.add_argument("volume", help="Громкость")
-        parser_volume.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).volume(args.volume)))
+        parser_volume.set_defaults(func=lambda args: print(functions.FFmpeg(args.audio).change_volume(args.volume)))
 
         # Команда speed
         parser_speed = subparsers.add_parser("speed", help="Изменение скорости")
