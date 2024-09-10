@@ -16,41 +16,44 @@ class FFmpeg:
             print(f"Ошибка: Файл {self.file} не найден.")
         return os.path.exists(self.file)
 
-    def duration(self):
-        p = subprocess.Popen(
-            f'{FFmpeg.cmds_probe} -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {self.file}')
-        return p.communicate()[0]
+    def run_cmd(self, command):
+        p = subprocess.Popen(command, stderr=subprocess.PIPE)
+        p.communicate()
+        self.edit_count += 1
+
+    def set_output(self, ext=None):
+        return f'{self.file[:-4]}.{ext}' if ext else f'{self.file[:-4]} ({self.edit_count}){self.file[-4:]}'
 
     def convert_to(self, ext, bitrate):
         if self.is_correct_file() and self.file[-3:] in FFmpeg.exts and ext in FFmpeg.exts:
-            output = f'{self.file[:-4]}.{ext}'
-            process = subprocess.Popen(f'{FFmpeg.cmds} -i {self.file} -ac 2 -ar {bitrate} {output}')
-            process.communicate()
-            self.edit_count += 1
+            output = self.set_output(ext)
+            command = [FFmpeg.cmds, '-i', self.file, '-ac', '2', '-ar', str(bitrate), '-y', output]
+            self.run_cmd(command)
             return output
         else:
             return False
 
-    def cut(self, start, stop):
-        #stop = self.duration() if stop is None else stop
-        #print(start, self.duration())
+    def cut(self, start=None, stop=None):
         if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
-            output = f'{self.file[:-4]} ({self.edit_count}){self.file[-4:]}'
-            command = [FFmpeg.cmds, '-i', self.file, '-ss', start, '-to', stop, '-y', output]
-            p = subprocess.Popen(command, stderr=subprocess.PIPE)
-            p.communicate()
-            self.edit_count += 1
+            output = self.set_output()
+
+            command = [FFmpeg.cmds, '-i', self.file]
+            if start:
+                command.extend(['-ss', start])
+            if stop:
+                command.extend(['-to', stop])
+            command.extend(['-y', output])
+
+            self.run_cmd(command)
             return output
         else:
             return False
 
     def volume(self, volume):
         if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
-            output = f'{self.file[:-4]} ({self.edit_count}){self.file[-4:]}'
+            output = self.set_output()
             command = [FFmpeg.cmds, '-i', self.file, '-af', f'volume={volume}', '-y', output]
-            p = subprocess.Popen(command, stderr=subprocess.PIPE)
-            p.communicate()
-            self.edit_count += 1
+            self.run_cmd(command)
             return output
         else:
             return False
