@@ -16,7 +16,9 @@ class FFmpeg:
         'render': f'Рендерит аудиофайл.',
         'undo': f'Отмена изменений.',
         'quit': f'Выход из утилиты.',
-        'help': f'Справка по командам.'
+        'help': f'Справка по командам.',
+        'splice': f'Склейка текущего и другого файлов',
+        'overlay': f'Накладка другого файла'
     }
 
     command_usage = {
@@ -28,7 +30,10 @@ class FFmpeg:
         'undo': f'undo [count], где count > 0 - количество изменений, которое необходимо отменить.',
         'quit': f'quit, и всё)))',
         'help': f'help [command], где command - это команда, справка о которой Вас интересует. Если command не задано, '
-                f'тогда будет выведена справка обо всех коммандах'
+                f'тогда будет выведена справка обо всех коммандах',
+        'splice': f'splice [other_file] [side], где other_file - путь к другому файлу, side - r или l'
+                  f'(справа или слева присоединение другого файла)',
+        'overlay': f'overlay [other_file], где other_file - путь к другому файлу'
     }
 
     def __init__(self, file, is_simple):
@@ -131,30 +136,71 @@ class FFmpeg:
         else:
             return False
 
-    def speed(self, speed=1):
+    def splice(self, other_file, side="r"):
         if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
             output = self.set_output()
-            command = [FFmpeg.cmds, '-i', os.path.abspath(self.current_path), '-af', f'rubberband=tempo={speed}', '-y',
-                       output]
-            #p = subprocess.Popen(command)
-            #p.wait()
-            #if p.returncode == 0:
-            #    self.add_to_history(output)
-            #    return output
+            if side == "r":
+                command = [
+                    'ffmpeg',
+                    '-i', os.path.abspath(self.current_path),
+                    '-i', other_file,
+                    '-c', 'copy',
+                    '-map', '0',
+                    '-map', '1',
+                    '-metadata:s:v:0', 'title="Первый файл"',
+                    '-metadata:s:v:1', 'title="Второй файл"',
+                    '-metadata', 'title="Объединенный файл"',
+                    output
+                ]
+            if side == "l":
+                command = [
+                    'ffmpeg',
+                    '-i', other_file,
+                    '-i', os.path.abspath(self.current_path),
+                    '-c', 'copy',
+                    '-map', '0',
+                    '-map', '1',
+                    '-metadata:s:v:0', 'title="Первый файл"',
+                    '-metadata:s:v:1', 'title="Второй файл"',
+                    '-metadata', 'title="Объединенный файл"',
+                    output
+                ]
+                if self.run_cmd(command) == 0:
+                    self.add_to_history(output)
+                    return output
+                else:
+                    return False
+            else:
+                return False
 
+    def overlay(self, other_file):
+        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
+            output = self.set_output()
+            command = [
+                'ffmpeg',
+                '-i', os.path.abspath(self.current_path),
+                '-i', other_file,
+                '-filter_complex', '[0:a][1:a]amix=inputs=2',
+                output
+            ]
             if self.run_cmd(command) == 0:
                 self.add_to_history(output)
                 return output
             else:
                 return False
+        else:
+            return False
 
-            #else:
-            #    if p.stderr:  # Проверяем, есть ли вывод в stderr
-            #        error_message = p.stderr.read().decode('utf-8', errors='ignore')
-            #        print(f"Ошибка при изменении скорости: {error_message}")
-            #    else:
-            #        print("Ошибка при изменении скорости: Неизвестная ошибка.")
-            #    return False
+    def speed(self, speed=1):
+        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
+            output = self.set_output()
+            command = [FFmpeg.cmds, '-i', os.path.abspath(self.current_path), '-af', f'rubberband=tempo={speed}', '-y',
+                       output]
+            if self.run_cmd(command) == 0:
+                self.add_to_history(output)
+                return output
+            else:
+                return False
         # if self.file.endswith('mp3'):
         # output = f'{self.file[:-4]} ({self.edit_count}){self.file[-4:]}'
         # p = subprocess.Popen(f'{FFmpeg.cmds} -i {self.file} -af atempo={speed} {output}')
@@ -181,7 +227,7 @@ class FFmpeg:
             print(f'{command} - {self.command_descriptions[command]}\nИспользование: {self.command_usage[command]}')
 
         else:
-            print(f'Такой команды нет. Существующие команды: {', '.join(self.command_usage.keys())}')
+            print(f'Такой команды нет. Существующие команды: {", ".join(self.command_usage.keys())}')
 
         return True
 

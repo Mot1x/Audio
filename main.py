@@ -22,7 +22,7 @@ def get_command_and_args(request):
 def print_fail_message(command):
     print(
         f'Команда не выполнилась. Проверьте существование файла и разрешение '
-        f'(подходящие разрешения: {', '.join(functions.FFmpeg.exts)}), а также аргументы.\n'
+        f'(подходящие разрешения: {", ".join(functions.FFmpeg.exts)}), а также аргументы.\n'
         f'Использование команды: {functions.FFmpeg.command_usage[command]}')
 
 
@@ -54,7 +54,7 @@ def main():
                 file.help(*req_args)
 
             else:
-                print(f'Такой команды нет. Существующие команды: {', '.join(file.command_usage.keys())}')
+                print(f'Такой команды нет. Существующие команды: {", ".join(file.command_usage.keys())}')
 
         except Exception as e:
             print(f"Ошибка: {e}")
