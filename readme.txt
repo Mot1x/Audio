@@ -8,7 +8,3 @@ python main.py "путь к аудио"
 далее вводятся команды
 
 Над проектом работали Ахматнуров Артём и Костарева Анастасия
-
-cd C:\Users\anaas\OneDrive\Рабочий стол\учеба2\питон\Audio
-python main.py "C:\Users\anaas\OneDrive\Рабочий стол\учеба2\питон\Audio\melody.wav"
-splice C:\melody.wav
