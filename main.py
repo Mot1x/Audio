@@ -1,8 +1,7 @@
 import sys
-import functions
+from functions import FFmpeg
 import argparse
 import os
-from functions import FFmpeg
 
 
 def parse_args():
@@ -16,7 +15,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    file = functions.FFmpeg(args.audio, args.simple)
+    file = FFmpeg(args.audio, args.simple)
     command = ''
     print(f'Ваш файл: {args.audio}\nПростое изменение файла: {args.simple}')
 
