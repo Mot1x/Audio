@@ -1,5 +1,6 @@
 import os
 import subprocess
+import main
 import re
 
 
@@ -18,7 +19,9 @@ class FFmpeg:
         'quit': f'Выход из утилиты.',
         'help': f'Справка по командам.',
         'splice': f'Склейка текущего и другого файлов',
-        'overlay': f'Накладка другого файла'
+        'overlay': f'Накладка другого файла',
+        #'read_file': f'Чтение инструкций из файла',
+        'speed2': f'торой способ ускорения'
     }
 
     command_usage = {
@@ -33,7 +36,9 @@ class FFmpeg:
                 f'тогда будет выведена справка обо всех коммандах',
         'splice': f'splice [other_file] [side], где other_file - путь к другому файлу, side - r или l'
                   f'(справа или слева присоединение другого файла)',
-        'overlay': f'overlay [other_file], где other_file - путь к другому файлу'
+        'overlay': f'overlay [other_file], где other_file - путь к другому файлу',
+        #'read_file': f'read_file [уть к файлу с инструкцией]',
+        'speed2': f'speed2 [скорость]'
     }
 
     def __init__(self, file, is_simple):
@@ -137,19 +142,17 @@ class FFmpeg:
             return False
 
     def splice(self, other_file, side="r"):
-        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
+        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts and FFmpeg(other_file).is_correct_file():
             output = self.set_output()
+            command = []
             if side == "r":
                 command = [
                     'ffmpeg',
                     '-i', os.path.abspath(self.current_path),
                     '-i', other_file,
-                    '-c', 'copy',
-                    '-map', '0',
-                    '-map', '1',
-                    '-metadata:s:v:0', 'title="Первый файл"',
-                    '-metadata:s:v:1', 'title="Второй файл"',
-                    '-metadata', 'title="Объединенный файл"',
+                    '-filter_complex', '[0:a][1:a]concat=n=2:v=0:a=1[out]',
+                    '-map', '[out]',
+                    '-c:a', 'copy',
                     output
                 ]
             if side == "l":
@@ -160,21 +163,21 @@ class FFmpeg:
                     '-c', 'copy',
                     '-map', '0',
                     '-map', '1',
-                    '-metadata:s:v:0', 'title="Первый файл"',
-                    '-metadata:s:v:1', 'title="Второй файл"',
+                    '-metadata:s:a:0', 'title="Первый файл"',
+                    '-metadata:s:a:1', 'title="Второй файл"',
                     '-metadata', 'title="Объединенный файл"',
                     output
                 ]
-                if self.run_cmd(command) == 0:
-                    self.add_to_history(output)
-                    return output
-                else:
-                    return False
+            if self.run_cmd(command) == 0:
+                self.add_to_history(output)
+                return output
             else:
                 return False
+        else:
+            return False
 
     def overlay(self, other_file):
-        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
+        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts and FFmpeg(other_file).is_correct_file():
             output = self.set_output()
             command = [
                 'ffmpeg',
@@ -201,12 +204,36 @@ class FFmpeg:
                 return output
             else:
                 return False
-        # if self.file.endswith('mp3'):
-        # output = f'{self.file[:-4]} ({self.edit_count}){self.file[-4:]}'
-        # p = subprocess.Popen(f'{FFmpeg.cmds} -i {self.file} -af atempo={speed} {output}')
-        # p.communicate()
-        # self.edit_count += 1
-        # return output
+        else:
+            return False
+
+    def read_file(self, input_file):
+        with open(input_file) as file_program:
+            commands = file_program.readlines()
+            for command in commands:
+                if not command.isspace():
+                    command = command.strip()
+                    command, req_args = main.get_command_and_args(command)
+                    if command != 'help' and command != 'quit' and command in FFmpeg.command_usage.keys():
+                        local_vars = {'file': self, 'req_args': req_args}
+                        exec(f'state = file.{command}(*req_args)', globals(), local_vars)
+                        state = local_vars.get('state')
+
+                        if not state:
+                            main.print_fail_message(command)
+                        else:
+                            print(f'Ваш файл: {state}')
+
+    def speed2(self, speed=1):
+        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
+            output = self.set_output()
+            command = [FFmpeg.cmds, '-i', os.path.abspath(self.current_path), '-af', f'atempo={speed}', '-y',
+                       output]
+            if self.run_cmd(command) == 0:
+                self.add_to_history(output)
+                return output
+            else:
+                return False
         else:
             return False
 
