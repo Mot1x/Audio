@@ -36,7 +36,7 @@ class FFmpeg:
                 f'тогда будет выведена справка обо всех коммандах',
         'splice': f'splice [other_file] [side], где other_file - путь к другому файлу, side - r или l'
                   f'(справа или слева присоединение другого файла)',
-        'overlay': f'overlay [other_file], где other_file - путь к другому файлу',
+        'overlay': f'overlay [other_file] [start_minutes] [start_seconds], где other_file - путь к другому файлу',
         #'read_file': f'read_file [уть к файлу с инструкцией]',
         'speed2': f'speed2 [скорость]'
     }
@@ -141,49 +141,58 @@ class FFmpeg:
         else:
             return False
 
-    def splice(self, other_file, side="r"):
-        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts and FFmpeg(other_file).is_correct_file():
+    def splice(self, other_file, side):
+        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
             output = self.set_output()
-            command = []
+            command = [
+                'ffmpeg',
+                '-i', self.current_path,
+                '-i', other_file,
+                '-filter_complex', '[0:a][1:a]concat=n=2:a=1[out]',
+                '-map', '[out]',
+                '-c:a', 'pcm_u8',
+                output
+            ]
             if side == "r":
                 command = [
                     'ffmpeg',
-                    '-i', os.path.abspath(self.current_path),
+                    '-f', 'concat',
+                    '-safe', '0',
+                    '-i', self.current_path,
                     '-i', other_file,
-                    '-filter_complex', '[0:a][1:a]concat=n=2:v=0:a=1[out]',
-                    '-map', '[out]',
-                    '-c:a', 'copy',
+                    '-c', 'copy',
                     output
                 ]
-            if side == "l":
+            elif side == "l":
                 command = [
                     'ffmpeg',
+                    '-f', 'concat',
+                    '-safe', '0',
                     '-i', other_file,
-                    '-i', os.path.abspath(self.current_path),
+                    '-i', self.current_path,
                     '-c', 'copy',
-                    '-map', '0',
-                    '-map', '1',
-                    '-metadata:s:a:0', 'title="Первый файл"',
-                    '-metadata:s:a:1', 'title="Второй файл"',
-                    '-metadata', 'title="Объединенный файл"',
                     output
                 ]
-            if self.run_cmd(command) == 0:
-                self.add_to_history(output)
-                return output
             else:
-                return False
+                raise ValueError("Неверный параметр side: должен быть 'l' или 'r'")
+            try:
+                output = subprocess.check_output(command)
+                print("Объединение завершено.")
+            except subprocess.CalledProcessError as e:
+                print("Ошибка при объединении файлов: ", e.output.decode('utf-8'))
+
         else:
             return False
 
     def overlay(self, other_file):
-        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts and FFmpeg(other_file).is_correct_file():
+        if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
             output = self.set_output()
             command = [
                 'ffmpeg',
                 '-i', os.path.abspath(self.current_path),
                 '-i', other_file,
                 '-filter_complex', '[0:a][1:a]amix=inputs=2',
+                '-map', '[out]',
                 output
             ]
             if self.run_cmd(command) == 0:
@@ -210,6 +219,7 @@ class FFmpeg:
     def read_file(self, input_file):
         with open(input_file) as file_program:
             commands = file_program.readlines()
+            print(commands)
             for command in commands:
                 if not command.isspace():
                     command = command.strip()
