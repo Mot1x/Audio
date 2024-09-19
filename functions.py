@@ -1,7 +1,7 @@
 import os
 import subprocess
-import main
 import re
+import sys
 
 
 class FFmpeg:
@@ -20,8 +20,8 @@ class FFmpeg:
         'help': f'Справка по командам.',
         'splice': f'Склейка текущего и другого файлов',
         'overlay': f'Накладка другого файла',
-        #'read_file': f'Чтение инструкций из файла',
-        'speed2': f'торой способ ускорения'
+        'read_file': f'Чтение инструкций из файла',
+        'speed2': f'Второй способ ускорения'
     }
 
     command_usage = {
@@ -37,7 +37,7 @@ class FFmpeg:
         'splice': f'splice [other_file] [side], где other_file - путь к другому файлу, side - r или l'
                   f'(справа или слева присоединение другого файла)',
         'overlay': f'overlay [other_file], где other_file - путь к другому файлу',
-        #'read_file': f'read_file [уть к файлу с инструкцией]',
+        'read_file': f'read_file [Путь к файлу с инструкцией]',
         'speed2': f'speed2 [скорость]'
     }
 
@@ -48,6 +48,52 @@ class FFmpeg:
         self.edit_count = 0
         self.is_simple = is_simple
 
+    @staticmethod
+    def get_command_and_args(request):
+        command_and_args = request.split(" ")
+        command = command_and_args[0]
+        args = command_and_args[1:]
+        return command, args
+    
+    def execute(self, command, req_args=None):
+        try:
+            if command == 'quit':
+                sys.exit()
+
+            if command == 'read_file':
+                self.read_file(*req_args)
+
+            elif command != 'help' and command in self.command_usage.keys():
+                local_vars = {'file': self, 'req_args': req_args}
+                exec(f'state = file.{command}(*req_args)', globals(), local_vars)
+                state = local_vars.get('state')
+
+                if not state:
+                    FFmpeg.print_fail_message(command)
+                else:
+                    print(f'Ваш файл: {state}')
+
+            elif command == 'help':
+                self.help(*req_args)
+
+            else:
+                print(f'{command} {' '.join(req_args)}: Такой команды нет.' 
+                      f'Существующие команды: {", ".join(self.command_usage.keys())}')
+
+        except Exception as e:
+            print(f"Ошибка: {e}")
+            FFmpeg.print_fail_message(command)
+
+    @staticmethod
+    def print_fail_message(command):
+        if command == '':
+            print(f'Не было дано команды.')
+        else:
+            print(
+                f'Команда не выполнилась. Проверьте существование файла и разрешение '
+                f'(подходящие разрешения: {", ".join(FFmpeg.exts)}), а также аргументы.\n'
+                f'Использование команды: {FFmpeg.command_usage[command]}')
+    
     def is_correct_file(self):
         if not os.path.exists(self.file):
             print(f"Ошибка: Файл {self.file} не найден.")
@@ -81,7 +127,7 @@ class FFmpeg:
 
         return f'{path_dir}{new_name}.{ext}'
 
-    #def set_output(self, ext=None):
+    # def set_output(self, ext=None):
     #    path = os.path.dirname(os.path.abspath(__file__))
     #    name = self.file.split("\\")[-1][:-4]
     #    if len(name) >= 4:
@@ -207,22 +253,35 @@ class FFmpeg:
         else:
             return False
 
-    def read_file(self, input_file):
-        with open(input_file) as file_program:
-            commands = file_program.readlines()
-            for command in commands:
-                if not command.isspace():
-                    command = command.strip()
-                    command, req_args = main.get_command_and_args(command)
-                    if command != 'help' and command != 'quit' and command in FFmpeg.command_usage.keys():
-                        local_vars = {'file': self, 'req_args': req_args}
-                        exec(f'state = file.{command}(*req_args)', globals(), local_vars)
-                        state = local_vars.get('state')
+    #def read_file(self, input_file):
+    #    with open(input_file) as file_program:
+    #        commands = file_program.readlines()
+    #        for command in commands:
+    #            if not command.isspace():
+    #                command = command.strip()
+    #                command, req_args = main.get_command_and_args(command)
+    #                if command != 'help' and command != 'quit' and command in FFmpeg.command_usage.keys():
+    #                    local_vars = {'file': self, 'req_args': req_args}
+    #                    exec(f'state = file.{command}(*req_args)', globals(), local_vars)
+    #                    state = local_vars.get('state')
+#
+    #                    if not state:
+    #                        FFmpeg.print_fail_message(command)
+    #                    else:
+    #                        print(f'Ваш файл: {state}')
+    
+    def read_file(self, file):
+        with open(file) as file_program:
+            requests = [request.strip() for request in file_program.readlines()]
+            for request in requests:
+                command, req_args = FFmpeg.get_command_and_args(request)
+                try:
+                    self.execute(command, req_args)
 
-                        if not state:
-                            main.print_fail_message(command)
-                        else:
-                            print(f'Ваш файл: {state}')
+                except Exception as e:
+                    print(f"Ошибка: {e}")
+                    FFmpeg.print_fail_message(command)
+            print(f"\nФайл {file} выполнен.")
 
     def speed2(self, speed=1):
         if self.is_correct_file() and self.file[-3:] in FFmpeg.exts:
@@ -248,7 +307,8 @@ class FFmpeg:
     def help(self, command=None):
         if not command:
             for command in self.command_descriptions.keys():
-                print(f'{command} - {self.command_descriptions[command]}\nИспользование: {self.command_usage[command]}\n')
+                print(
+                    f'{command} - {self.command_descriptions[command]}\nИспользование: {self.command_usage[command]}\n')
 
         elif command in self.command_descriptions.keys():
             print(f'{command} - {self.command_descriptions[command]}\nИспользование: {self.command_usage[command]}')
@@ -277,4 +337,3 @@ class FFmpeg:
             self.edit_count -= count
 
         return self.current_path
-
