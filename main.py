@@ -1,6 +1,7 @@
 import sys
 from functions import FFmpeg
 import argparse
+import additional_functions
 import os
 
 
@@ -22,14 +23,14 @@ def main():
     while True:
         try:
             request = input('> ') if not args.read else f'read_file {args.read}'
-            command, req_args = FFmpeg.get_command_and_args(request)
+            command, req_args = additional_functions.get_command_and_args(request)
             file.execute(command, req_args)
             if args.read:
                 break
 
         except Exception as e:
             print(f"Ошибка: {e}")
-            FFmpeg.print_fail_message(command)
+            additional_functions.print_fail_message(command)
 
 
 if __name__ == "__main__":
