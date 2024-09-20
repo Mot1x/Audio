@@ -5,9 +5,9 @@ import additional_functions
 
 
 class FFmpeg:
-    cmds = 'C:\\ffmpeg\\bin\\ffmpeg.exe'
-    cmds_probe = 'C:\\ffmpeg\\bin\\ffprobe.exe'
-    exts = additional_functions.exts
+    _cmds = 'C:\\ffmpeg\\bin\\ffmpeg.exe'
+    _cmds_probe = 'C:\\ffmpeg\\bin\\ffprobe.exe'
+    _exts = additional_functions.exts
 
     def __init__(self, file, is_simple):
         self._file = file
@@ -17,6 +17,7 @@ class FFmpeg:
         self._is_simple = is_simple
     
     def execute(self, command, req_args=None):
+        """Выполнение command"""
         try:
             if command == 'quit':
                 sys.exit()
@@ -48,14 +49,16 @@ class FFmpeg:
             additional_functions.print_fail_message(command)
 
     def _add_to_history(self, output):
+        """Добавление в историю объекта нового output"""
         if not self._is_simple:
             self._current_path = output
             self._history.append(self._current_path)
 
     def convert(self, ext=None, bitrate=44100):
-        if additional_functions.is_correct_file(self._file) and self._file[-3:] in FFmpeg.exts and ext in FFmpeg.exts:
+        f'Конвертирует аудиофайл в один из доступных форматов ({", ".join(FFmpeg._exts)}).'
+        if additional_functions.is_correct_file_and_ext(self._file, ext):
             output = additional_functions.set_output(self._file, ext)
-            command = [FFmpeg.cmds,
+            command = [FFmpeg._cmds,
                        '-i', self._current_path,
                        '-ac', '2',
                        '-ar', str(bitrate),
@@ -68,10 +71,11 @@ class FFmpeg:
         return False
 
     def cut(self, start=None, stop=None):
-        if additional_functions.is_correct_file(self._file) and self._file[-3:] in FFmpeg.exts:
+        """Обрезает аудио"""
+        if additional_functions.is_correct_file_and_ext(self._file):
             output = additional_functions.set_output(self._file)
 
-            command = [FFmpeg.cmds, '-i', self._current_path]
+            command = [FFmpeg._cmds, '-i', self._current_path]
             if start:
                 command.extend(['-ss', start])
             if stop:
@@ -85,9 +89,10 @@ class FFmpeg:
         return False
 
     def volume(self, volume=1):
-        if additional_functions.is_correct_file(self._file) and self._file[-3:] in FFmpeg.exts:
+        """Изменение громкости"""
+        if additional_functions.is_correct_file_and_ext(self._file):
             output = additional_functions.set_output(self._file)
-            command = [FFmpeg.cmds,
+            command = [FFmpeg._cmds,
                        '-i', self._current_path,
                        '-af', f'volume={volume}',
                        '-y', output]
@@ -99,10 +104,11 @@ class FFmpeg:
         return False
 
     def splice(self, other_file, side='r'):
+        """Склейка текущего аудиофайла с другим с определеноой стороны"""
         if side not in ['r', 'l']:
             raise ValueError("Неверный параметр side: должен быть 'l' или 'r'")
 
-        if (additional_functions.is_correct_file(self._file) and self._file[-3:] in FFmpeg.exts and
+        if (additional_functions.is_correct_file_and_ext(self._file) and
                 additional_functions.is_correct_file(other_file)):
             output = additional_functions.set_output(self._file)
             command = [
@@ -121,7 +127,8 @@ class FFmpeg:
         return False
 
     def overlay(self, other_file):
-        if (additional_functions.is_correct_file(self._file) and self._file[-3:] in FFmpeg.exts and
+        """Накладка другого файла на текущий"""
+        if (additional_functions.is_correct_file_and_ext(self._file) and
                 additional_functions.is_correct_file(other_file)):
             output = additional_functions.set_output(self._file)
             command = [
@@ -140,9 +147,10 @@ class FFmpeg:
         return False
 
     def speed(self, speed=1):
-        if additional_functions.is_correct_file(self._file) and self._file[-3:] in FFmpeg.exts:
+        """Изменение скорости, как ускорение, так и замедление"""
+        if additional_functions.is_correct_file_and_ext(self._file):
             output = additional_functions.set_output(self._file)
-            command = [FFmpeg.cmds,
+            command = [FFmpeg._cmds,
                        '-i', os.path.abspath(self._current_path),
                        '-af', f'rubberband=tempo={speed}',
                        '-y', output]
@@ -154,10 +162,11 @@ class FFmpeg:
         return False
 
     def resample_speed(self, speed=1):
-        if additional_functions.is_correct_file(self._file) and self._file[-3:] in FFmpeg.exts:
+        """Изменение скорости с изменением тональности"""
+        if additional_functions.is_correct_file_and_ext(self._file):
             output = additional_functions.set_output(self._file)
             samplerate = self._get_samplerate()
-            command = [FFmpeg.cmds,
+            command = [FFmpeg._cmds,
                        '-i', self._current_path,
                        '-af', f'asetrate={samplerate}*{speed},aresample={samplerate}',
                        '-y', output]
@@ -169,6 +178,7 @@ class FFmpeg:
         return False
     
     def read_file(self, file):
+        """Выполнение инструкций построчно из файла"""
         with open(file) as file_program:
             requests = [request.strip() for request in file_program.readlines()]
             for request in requests:
@@ -182,8 +192,9 @@ class FFmpeg:
             print(f"\nФайл {file} выполнен.")
 
     def _get_samplerate(self):
+        """Получение частоты дискретизации"""
         command = [
-            FFmpeg.cmds_probe, '-v', 'error', '-select_streams', 'a:0', '-show_entries', 'stream=sample_rate',
+            FFmpeg._cmds_probe, '-v', 'error', '-select_streams', 'a:0', '-show_entries', 'stream=sample_rate',
             '-of', 'default=noprint_wrappers=1:nokey=1', self._current_path
         ]
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -191,14 +202,16 @@ class FFmpeg:
         return int(bitrate)
 
     def render(self, path=None):
-        if additional_functions.is_correct_file(self._file) and self._file[-3:] in FFmpeg.exts and path:
-            command = [FFmpeg.cmds, '-i', self._current_path, '-y', path]
+        """Редрерит аудио"""
+        if additional_functions.is_correct_file_and_ext(self._file) and path:
+            command = [FFmpeg._cmds, '-i', self._current_path, '-y', path]
             additional_functions.run_cmd(command)
             return path
         
         return False
 
     def help(self, command=None):
+        """Вывод справки с командами"""
         comm_descr = additional_functions.command_descriptions
         comm_us = additional_functions.command_usage
         if not command:
@@ -215,6 +228,7 @@ class FFmpeg:
         return True
 
     def undo(self, count=1):
+        """Отмена изменений"""
         count = int(count)
 
         if self._is_simple:
@@ -230,6 +244,7 @@ class FFmpeg:
         return self._current_path
 
     def redo(self, count=1):
+        """Возврат отменённых изменений"""
         count = int(count)
 
         if self._is_simple:
