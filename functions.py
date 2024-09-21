@@ -63,8 +63,6 @@ class FFmpeg:
                 self._add_to_history(output)
                 return output
 
-        return False
-
     def cut(self, start=None, stop=None):
         """Обрезает аудио"""
         if additional_functions.is_correct_file_and_ext(self._file):
@@ -81,8 +79,6 @@ class FFmpeg:
                 self._add_to_history(output)
                 return output
 
-        return False
-
     def volume(self, volume=1):
         """Изменение громкости"""
         if additional_functions.is_correct_file_and_ext(self._file):
@@ -95,8 +91,6 @@ class FFmpeg:
             if additional_functions.run_cmd(command) == 0:
                 self._add_to_history(output)
                 return output
-
-        return False
 
     def splice(self, other_file, side='r'):
         """Склейка текущего аудиофайла с другим с определеноой стороны"""
@@ -119,8 +113,6 @@ class FFmpeg:
                 self._add_to_history(output)
                 return output
 
-        return False
-
     def overlay(self, other_file):
         """Накладка другого файла на текущий"""
         if (additional_functions.is_correct_file_and_ext(self._file) and
@@ -139,8 +131,6 @@ class FFmpeg:
                 self._add_to_history(output)
                 return output
 
-        return False
-
     def speed(self, speed=1):
         """Изменение скорости, как ускорение, так и замедление"""
         if additional_functions.is_correct_file_and_ext(self._file):
@@ -153,8 +143,6 @@ class FFmpeg:
             if additional_functions.run_cmd(command) == 0:
                 self._add_to_history(output)
                 return output
-            
-        return False
 
     def resample_speed(self, speed=1):
         """Изменение скорости с изменением тональности"""
@@ -169,8 +157,6 @@ class FFmpeg:
             if additional_functions.run_cmd(command) == 0:
                 self._add_to_history(output)
                 return output
-
-        return False
     
     def read_file(self, file):
         """Выполнение инструкций построчно из файла"""
