@@ -37,12 +37,13 @@ class FFmpeg:
                     if command not in ['undo', 'redo']:
                         self._redo_history.clear()
                     print(f'Ваш файл: {state}')
-                else:
-                    additional_functions.print_fail_message(command)
+                    return
 
-            else:
-                print(f'{command} {" ".join(req_args)}: Такой команды нет.' 
-                      f'Существующие команды: {", ".join(additional_functions.command_usage.keys())}')
+                additional_functions.print_fail_message(command)
+                return
+
+            print(f'{command} {" ".join(req_args)}: Такой команды нет.' 
+                  f'Существующие команды: {", ".join(additional_functions.command_usage.keys())}')
 
         except Exception as e:
             print(f"Ошибка: {e}")
@@ -221,7 +222,7 @@ class FFmpeg:
             return False
         if count > len(self._history):
             raise Exception(f'Для отмены доступно {len(self._history)} < {count} действий.')
-        for i in range(count):
+        for _ in range(count):
             self._redo_history.append(self._history.pop())
 
         self._current_path = self._history[-1]
@@ -237,7 +238,7 @@ class FFmpeg:
             return False
         if count > len(self._redo_history):
             raise Exception(f'Для возврата доступно {len(self._redo_history)} < {count} действий.')
-        for i in range(count):
+        for _ in range(count):
             self._history.append(self._redo_history.pop())
 
         self._current_path = self._history[-1]

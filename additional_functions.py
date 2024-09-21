@@ -1,5 +1,6 @@
 import subprocess
 import os
+from pathlib import Path
 
 exts = ['wav', 'mp3']
 
@@ -50,11 +51,12 @@ def print_fail_message(command):
     """Вывод сообщения об ошибке"""
     if command == '':
         print(f'Не было дано команды.')
-    else:
-        print(
-            f'Команда не выполнилась. Проверьте существование файла и разрешение '
-            f'(подходящие разрешения: {", ".join(exts)}), а также аргументы.\n'
-            f'Использование команды: {command_usage[command]}')
+        return
+
+    print(
+        f'Команда не выполнилась. Проверьте существование файла и разрешение '
+        f'(подходящие разрешения: {", ".join(exts)}), а также аргументы.\n'
+        f'Использование команды: {command_usage[command]}')
 
 
 def run_cmd(command):
@@ -80,10 +82,10 @@ def set_output(file, ext=None):
     os.makedirs(path_dir, exist_ok=True)
     name = file.split("\\")[-1][:-4]
     new_name = name
-    i = 0
-    while os.path.exists(f'{path_dir}{new_name}.{ext}'):
-        i += 1
-        new_name = f'{name} ({i})'
+    copy_number = 0
+    while Path(f'{path_dir}{new_name}.{ext}').exists():
+        copy_number += 1
+        new_name = f'{name} ({copy_number})'
     return f'{path_dir}{new_name}.{ext}'
 
 
