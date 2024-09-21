@@ -210,8 +210,6 @@ class FFmpeg:
         else:
             print(f'Такой команды нет. Существующие команды: {", ".join(comm_us.keys())}')
 
-        return True
-
     def undo(self, count=1):
         """Отмена изменений"""
         count = int(count)
