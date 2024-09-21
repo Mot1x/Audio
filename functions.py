@@ -48,12 +48,6 @@ class FFmpeg:
             print(f"Ошибка: {e}")
             additional_functions.print_fail_message(command)
 
-    def _add_to_history(self, output):
-        """Добавление в историю объекта нового output"""
-        if not self._is_simple:
-            self._current_path = output
-            self._history.append(self._current_path)
-
     def convert(self, ext=None, bitrate=44100):
         f'Конвертирует аудиофайл в один из доступных форматов ({", ".join(FFmpeg._exts)}).'
         if additional_functions.is_correct_file_and_ext(self._file, ext):
@@ -191,16 +185,6 @@ class FFmpeg:
                     additional_functions.print_fail_message(command)
             print(f"\nФайл {file} выполнен.")
 
-    def _get_samplerate(self):
-        """Получение частоты дискретизации"""
-        command = [
-            FFmpeg._cmds_probe, '-v', 'error', '-select_streams', 'a:0', '-show_entries', 'stream=sample_rate',
-            '-of', 'default=noprint_wrappers=1:nokey=1', self._current_path
-        ]
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        bitrate = result.stdout.decode('utf-8').strip()
-        return int(bitrate)
-
     def render(self, path=None):
         """Редрерит аудио"""
         if additional_functions.is_correct_file_and_ext(self._file) and path:
@@ -258,3 +242,19 @@ class FFmpeg:
 
         self._current_path = self._history[-1]
         return self._current_path
+
+    def _add_to_history(self, output):
+        """Добавление в историю объекта нового output"""
+        if not self._is_simple:
+            self._current_path = output
+            self._history.append(self._current_path)
+
+    def _get_samplerate(self):
+        """Получение частоты дискретизации"""
+        command = [
+            FFmpeg._cmds_probe, '-v', 'error', '-select_streams', 'a:0', '-show_entries', 'stream=sample_rate',
+            '-of', 'default=noprint_wrappers=1:nokey=1', self._current_path
+        ]
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        bitrate = result.stdout.decode('utf-8').strip()
+        return int(bitrate)
