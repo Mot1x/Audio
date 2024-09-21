@@ -1,5 +1,4 @@
 import subprocess
-import os
 from pathlib import Path
 
 exts = ['wav', 'mp3']
@@ -8,7 +7,7 @@ command_descriptions = {
     'convert': f'Конвертирует аудиофайл в один из доступных форматов ({", ".join(exts)}).',
     'cut': f'Обрезает аудиофайл.',
     'volume': f'Изменяет громкость аудиофайла.',
-    'speed': f'Изменяет скорость аудиофайла.',
+    'speed': f'Изменяет скорость аудиофайла без изменения тональности.',
     'render': f'Рендерит аудиофайл.',
     'undo': f'Отмена изменений.',
     'redo': f'Возврат отменённых изменений.',
@@ -17,7 +16,7 @@ command_descriptions = {
     'splice': f'Склейка текущего и другого файлов',
     'overlay': f'Накладка другого файла',
     'read_file': f'Чтение инструкций из файла',
-    'resample_speed': f'Второй способ ускорения.'
+    'resample_speed': f'Изменяет скорость аудиофайла с изменением тональности.'
 }
 
 command_usage = {
@@ -31,7 +30,7 @@ command_usage = {
     'quit': f'quit, и всё)))',
     'help': f'help [command], где command - это команда, справка о которой Вас интересует. Если command не задано, '
             f'тогда будет выведена справка обо всех коммандах.',
-    'splice': f'splice [other_file] [side], где other_file - путь к другому файлу, side - r или l'
+    'splice': f'splice [other_file] [side], где other_file - путь к другому файлу, side - r или l '
               f'(справа или слева присоединение другого файла).',
     'overlay': f'overlay [other_file], где other_file - путь к другому файлу.',
     'read_file': f'read_file [path], где path - путь к файлу с инструкцией.',
@@ -41,7 +40,18 @@ command_usage = {
 
 def get_command_and_args(request):
     """Деление запроса на команду и аргументы"""
-    command_and_args = request.split(" ")
+    splited_request = request.split('"')
+
+    if len(splited_request) % 2 == 0:
+        raise Exception("Проверьте кавычки. Возможно, вы забыли закрыть одну из.")
+
+    command_and_args = []
+    for index in range(len(splited_request)):
+        if index % 2 == 1:
+            command_and_args.append(splited_request[index])
+            continue
+        command_and_args.extend(splited_request[index].split())
+
     command = command_and_args[0]
     args = command_and_args[1:]
     return command, args
@@ -69,24 +79,26 @@ def run_cmd(command):
 
 def is_correct_file(file):
     """Проверка, что файл существует"""
-    if not os.path.exists(file):
+    if not file.exists():
         print(f"Ошибка: Файл {file} не найден.")
-    return os.path.exists(file)
+    return file.exists()
 
 
 def set_output(file, ext=None):
     """Составление имени измененного файла"""
     if not ext:
-        ext = file[-3:]
-    path_dir = f'{file[:-4]} renders\\'
-    os.makedirs(path_dir, exist_ok=True)
-    name = file.split("\\")[-1][:-4]
-    new_name = name
+        ext = file.suffix[1:]
+
+    filename = file.stem
+    path_dir = Path(f'{file.resolve().with_suffix('')}_renders\\')
+    path_dir.mkdir(exist_ok=True)
+    Path(f'{path_dir}{filename}.{ext}')
+    output = path_dir / f'{filename}.{ext}'
     copy_number = 0
-    while Path(f'{path_dir}{new_name}.{ext}').exists():
+    while output.exists():
         copy_number += 1
-        new_name = f'{name} ({copy_number})'
-    return f'{path_dir}{new_name}.{ext}'
+        output = output.with_stem(f'{filename}_{copy_number}')
+    return output
 
 
 def is_correct_file_and_ext(file, ext=None):
@@ -94,5 +106,5 @@ def is_correct_file_and_ext(file, ext=None):
     if not is_correct_file(file):
         return False
     if ext is None:
-        return file[-3:] in exts
-    return file[-3:] in exts and ext in exts
+        return file.suffix[1:] in exts
+    return file.suffix[1:] in exts and ext in exts
