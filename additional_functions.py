@@ -16,7 +16,7 @@ command_descriptions = {
     'splice': f'Склейка текущего и другого файлов',
     'overlay': f'Накладка другого файла',
     'read_file': f'Чтение инструкций из файла',
-    'resample_speed': f'Второй способ ускорения'
+    'resample_speed': f'Второй способ ускорения.'
 }
 
 command_usage = {
@@ -29,12 +29,12 @@ command_usage = {
     'redo': f'redo [count], где count > 0 - количество изменений, которое необходимо возвратить.',
     'quit': f'quit, и всё)))',
     'help': f'help [command], где command - это команда, справка о которой Вас интересует. Если command не задано, '
-            f'тогда будет выведена справка обо всех коммандах',
+            f'тогда будет выведена справка обо всех коммандах.',
     'splice': f'splice [other_file] [side], где other_file - путь к другому файлу, side - r или l'
-              f'(справа или слева присоединение другого файла)',
-    'overlay': f'overlay [other_file], где other_file - путь к другому файлу',
-    'read_file': f'read_file [Путь к файлу с инструкцией]',
-    'resample_speed': f'resample_speed [скорость]'
+              f'(справа или слева присоединение другого файла).',
+    'overlay': f'overlay [other_file], где other_file - путь к другому файлу.',
+    'read_file': f'read_file [path], где path - путь к файлу с инструкцией.',
+    'resample_speed': f'resample_speed [s], где s - скорость в процентах (1 = 100%).'
 }
 
 
