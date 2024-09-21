@@ -1,8 +1,6 @@
-import sys
 from functions import FFmpeg
 import argparse
 import additional_functions
-import os
 
 
 def parse_args():
