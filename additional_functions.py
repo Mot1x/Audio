@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-exts = ['wav', 'mp3']
+exts: list[str] = ['wav', 'mp3']
 
 command_descriptions = {
     'convert': f'Конвертирует аудиофайл в один из доступных форматов ({", ".join(exts)}).',
@@ -38,14 +38,14 @@ command_usage = {
 }
 
 
-def get_command_and_args(request) -> tuple[str, list]:
+def get_command_and_args(request) -> tuple[str, list[str]]:
     """Деление запроса на команду и аргументы"""
-    splited_request: list = request.split('"')
+    splited_request: list[str] = request.split('"')
 
     if len(splited_request) % 2 == 0:
         raise Exception("Проверьте кавычки. Возможно, вы забыли закрыть одну из.")
 
-    command_and_args: list = []
+    command_and_args: list[str] = []
     for index in range(len(splited_request)):
         if index % 2 == 1:
             command_and_args.append(splited_request[index])
@@ -53,7 +53,7 @@ def get_command_and_args(request) -> tuple[str, list]:
         command_and_args.extend(splited_request[index].split())
 
     command: str = command_and_args[0]
-    args: list = command_and_args[1:]
+    args: list[str] = command_and_args[1:]
     return command, args
 
 

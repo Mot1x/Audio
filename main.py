@@ -23,7 +23,7 @@ def main() -> None:
         try:
             request: str = input('> ') if not args.read else f'read_file {args.read}'
             command: str = additional_functions.get_command_and_args(request)[0]
-            req_args: list = additional_functions.get_command_and_args(request)[1]
+            req_args: list[str] = additional_functions.get_command_and_args(request)[1]
             file.execute(command, req_args)
             if args.read:
                 break

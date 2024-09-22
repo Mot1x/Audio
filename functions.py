@@ -8,13 +8,13 @@ from pathlib import Path
 class FFmpeg:
     _cmds: Path = Path('C:\\ffmpeg\\bin\\ffmpeg.exe')
     _cmds_probe: Path = Path('C:\\ffmpeg\\bin\\ffprobe.exe')
-    _exts: list = additional_functions.exts
+    _exts: list[str] = additional_functions.exts
 
     def __init__(self, file, is_simple):
         self._file: Path = Path(file)
         self._current_path: Path = Path(file)
-        self._history: list = [Path(self._file)]
-        self._redo_history: list = []
+        self._history: list[Path] = [Path(self._file)]
+        self._redo_history: list[Path] = []
         self._is_simple: bool = is_simple
     
     def execute(self, command, req_args=None) -> None:
@@ -54,7 +54,7 @@ class FFmpeg:
         f'Конвертирует аудиофайл в один из доступных форматов ({", ".join(FFmpeg._exts)}).'
         if additional_functions.is_correct_file_and_ext(self._current_path, ext):
             output: Path = additional_functions.set_output(self._file, ext)
-            command: list = [FFmpeg._cmds.resolve(),
+            command: list[str] = [FFmpeg._cmds.resolve(),
                        '-i', self._current_path.resolve(),
                        '-ac', '2',
                        '-ar', str(bitrate),
@@ -69,7 +69,7 @@ class FFmpeg:
         if additional_functions.is_correct_file_and_ext(self._current_path):
             output: Path = additional_functions.set_output(self._file)
 
-            command: list = [FFmpeg._cmds.resolve(), '-i', self._current_path.resolve()]
+            command: list[str] = [FFmpeg._cmds.resolve(), '-i', self._current_path.resolve()]
             if start:
                 command.extend(['-ss', start])
             if stop:
@@ -84,7 +84,7 @@ class FFmpeg:
         """Изменение громкости"""
         if additional_functions.is_correct_file_and_ext(self._current_path):
             output: Path = additional_functions.set_output(self._file)
-            command: list = [FFmpeg._cmds.resolve(),
+            command: list[str] = [FFmpeg._cmds.resolve(),
                        '-i', self._current_path.resolve(),
                        '-af', f'volume={volume}',
                        '-y', output.resolve()]
@@ -102,7 +102,7 @@ class FFmpeg:
         if (additional_functions.is_correct_file_and_ext(self._current_path) and
                 additional_functions.is_correct_file_and_ext(other_file)):
             output: Path = additional_functions.set_output(self._file)
-            command: list = [
+            command: list[str] = [
                 'ffmpeg',
                 '-i', self._current_path.resolve() if side == 'r' else other_file.resolve(),
                 '-i', other_file.resolve() if side == 'r' else self._current_path.resolve(),
@@ -121,7 +121,7 @@ class FFmpeg:
         if (additional_functions.is_correct_file_and_ext(self._current_path) and
                 additional_functions.is_correct_file_and_ext(other_file)):
             output: Path = additional_functions.set_output(self._file)
-            command: list = [
+            command: list[str] = [
                 'ffmpeg',
                 '-i', self._current_path.resolve(),
                 '-i', other_file.resolve(),
@@ -137,7 +137,7 @@ class FFmpeg:
         """Изменение скорости, как ускорение, так и замедление"""
         if additional_functions.is_correct_file_and_ext(self._current_path):
             output: Path = additional_functions.set_output(self._file)
-            command: list = [FFmpeg._cmds.resolve(),
+            command: list[str] = [FFmpeg._cmds.resolve(),
                        '-i', self._current_path.resolve(),
                        '-af', f'rubberband=tempo={speed}',
                        '-y', output.resolve()]
@@ -151,7 +151,7 @@ class FFmpeg:
         if additional_functions.is_correct_file_and_ext(self._current_path):
             output: Path = additional_functions.set_output(self._file)
             samplerate: int = self._get_samplerate()
-            command: list = [FFmpeg._cmds.resolve(),
+            command: list[str] = [FFmpeg._cmds.resolve(),
                        '-i', self._current_path.resolve(),
                        '-af', f'asetrate={samplerate}*{speed},aresample={samplerate}',
                        '-y', output.resolve()]
@@ -163,7 +163,7 @@ class FFmpeg:
     def read_file(self, file) -> None:
         """Выполнение инструкций построчно из файла"""
         with open(file) as file_program:
-            requests: list = [request.strip() for request in file_program.readlines()]
+            requests: list[str] = [request.strip() for request in file_program.readlines()]
             for request in requests:
                 command, req_args = additional_functions.get_command_and_args(request)
                 try:
@@ -177,7 +177,7 @@ class FFmpeg:
     def render(self, path=None) -> Path:
         """Рендерит аудио"""
         if additional_functions.is_correct_file_and_ext(self._current_path) and path:
-            command: list = [FFmpeg._cmds.resolve(),
+            command: list[str] = [FFmpeg._cmds.resolve(),
                        '-i', self._current_path.resolve(),
                        '-y', path]
             additional_functions.run_cmd(command)
@@ -238,7 +238,7 @@ class FFmpeg:
 
     def _get_samplerate(self) -> int:
         """Получение частоты дискретизации"""
-        command: list = [
+        command: list[str] = [
             FFmpeg._cmds_probe.resolve(), '-v', 'error', '-select_streams', 'a:0', '-show_entries', 'stream=sample_rate',
             '-of', 'default=noprint_wrappers=1:nokey=1', self._current_path.resolve()
         ]
