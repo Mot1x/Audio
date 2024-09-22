@@ -38,7 +38,7 @@ command_usage = {
 }
 
 
-def get_command_and_args(request) -> tuple[str, list[str]]:
+def get_command_and_args(request: str) -> tuple[str, list[str]]:
     """Деление запроса на команду и аргументы"""
     splited_request: list[str] = request.split('"')
 
@@ -57,7 +57,7 @@ def get_command_and_args(request) -> tuple[str, list[str]]:
     return command, args
 
 
-def print_fail_message(command) -> None:
+def print_fail_message(command: str) -> None:
     """Вывод сообщения об ошибке"""
     if command == '':
         print(f'Не было дано команды.')
@@ -68,7 +68,7 @@ def print_fail_message(command) -> None:
         f'Использование команды: {command_usage[command]}')
 
 
-def run_cmd(command) -> int:
+def run_cmd(command: str) -> int:
     """Запуск процесса с командой"""
     p = subprocess.Popen(command, stderr=subprocess.PIPE)
     p.communicate()
@@ -76,14 +76,14 @@ def run_cmd(command) -> int:
     return p.returncode
 
 
-def is_correct_file(file) -> bool:
+def is_correct_file(file: Path) -> bool:
     """Проверка, что файл существует"""
     if not file.exists():
         print(f"Ошибка: Файл {file} не найден.")
     return file.exists()
 
 
-def set_output(file, ext=None) -> Path:
+def set_output(file: Path, ext=None) -> Path:
     """Составление имени измененного файла"""
     if not ext:
         ext = file.suffix[1:]
@@ -100,7 +100,7 @@ def set_output(file, ext=None) -> Path:
     return output
 
 
-def is_correct_file_and_ext(file, ext=None) -> bool:
+def is_correct_file_and_ext(file: Path, ext=None) -> bool:
     """Проверка на корректоность файла и аудиоформата"""
     if not is_correct_file(file):
         return False

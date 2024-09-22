@@ -10,14 +10,14 @@ class FFmpeg:
     _cmds_probe: Path = Path('C:\\ffmpeg\\bin\\ffprobe.exe')
     _exts: list[str] = additional_functions.exts
 
-    def __init__(self, file, is_simple):
+    def __init__(self, file: str, is_simple: bool):
         self._file: Path = Path(file)
         self._current_path: Path = Path(file)
         self._history: list[Path] = [Path(self._file)]
         self._redo_history: list[Path] = []
         self._is_simple: bool = is_simple
     
-    def execute(self, command, req_args=None) -> None:
+    def execute(self, command: str, req_args=None) -> None:
         """Выполнение command"""
         try:
             if command == 'quit':
@@ -93,7 +93,7 @@ class FFmpeg:
                 self._add_to_history(output)
                 return output
 
-    def splice(self, other_file, side='r'):
+    def splice(self, other_file: str, side='r'):
         """Склейка текущего аудиофайла с другим с определеноой стороны"""
         other_file: Path = Path(other_file)
         if side not in ['r', 'l']:
@@ -115,7 +115,7 @@ class FFmpeg:
                 self._add_to_history(output)
                 return output
 
-    def overlay(self, other_file) -> Path:
+    def overlay(self, other_file: str) -> Path:
         """Накладка другого файла на текущий"""
         other_file: Path = Path(other_file)
         if (additional_functions.is_correct_file_and_ext(self._current_path) and
@@ -160,7 +160,7 @@ class FFmpeg:
                 self._add_to_history(output)
                 return output
     
-    def read_file(self, file) -> None:
+    def read_file(self, file: str) -> None:
         """Выполнение инструкций построчно из файла"""
         with open(file) as file_program:
             requests: list[str] = [request.strip() for request in file_program.readlines()]
@@ -230,7 +230,7 @@ class FFmpeg:
         self._current_path = self._history[-1]
         return self._current_path
 
-    def _add_to_history(self, output) -> None:
+    def _add_to_history(self, output: Path) -> None:
         """Добавление в историю объекта нового output"""
         if not self._is_simple:
             self._current_path = output
