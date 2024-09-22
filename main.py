@@ -3,7 +3,8 @@ import argparse
 import additional_functions
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
+    """Парсит аргументы командной строки"""
     parser = argparse.ArgumentParser(description="Аудиоредактор")
     parser.add_argument("audio", help="Полный путь к аудиофайлу с расширением mp3, wav")
     parser.add_argument('-s', '--simple', action='store_true',
@@ -12,16 +13,17 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
-    args = parse_args()
-    file = FFmpeg(args.audio, args.simple)
-    command = ''
+def main() -> None:
+    args: argparse.Namespace = parse_args()
+    file: FFmpeg = FFmpeg(args.audio, args.simple)
+    command: str = ''
     print(f'Ваш файл: {args.audio}\nПростое изменение файла: {args.simple}')
 
     while True:
         try:
-            request = input('> ') if not args.read else f'read_file {args.read}'
-            command, req_args = additional_functions.get_command_and_args(request)
+            request: str = input('> ') if not args.read else f'read_file {args.read}'
+            command: str = additional_functions.get_command_and_args(request)[0]
+            req_args: list = additional_functions.get_command_and_args(request)[1]
             file.execute(command, req_args)
             if args.read:
                 break

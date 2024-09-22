@@ -38,38 +38,37 @@ command_usage = {
 }
 
 
-def get_command_and_args(request):
+def get_command_and_args(request) -> tuple[str, list]:
     """Деление запроса на команду и аргументы"""
-    splited_request = request.split('"')
+    splited_request: list = request.split('"')
 
     if len(splited_request) % 2 == 0:
         raise Exception("Проверьте кавычки. Возможно, вы забыли закрыть одну из.")
 
-    command_and_args = []
+    command_and_args: list = []
     for index in range(len(splited_request)):
         if index % 2 == 1:
             command_and_args.append(splited_request[index])
             continue
         command_and_args.extend(splited_request[index].split())
 
-    command = command_and_args[0]
-    args = command_and_args[1:]
+    command: str = command_and_args[0]
+    args: list = command_and_args[1:]
     return command, args
 
 
-def print_fail_message(command):
+def print_fail_message(command) -> None:
     """Вывод сообщения об ошибке"""
     if command == '':
         print(f'Не было дано команды.')
         return
-
     print(
         f'Команда не выполнилась. Проверьте существование файла и разрешение '
         f'(подходящие разрешения: {", ".join(exts)}), а также аргументы.\n'
         f'Использование команды: {command_usage[command]}')
 
 
-def run_cmd(command):
+def run_cmd(command) -> int:
     """Запуск процесса с командой"""
     p = subprocess.Popen(command, stderr=subprocess.PIPE)
     p.communicate()
@@ -77,31 +76,31 @@ def run_cmd(command):
     return p.returncode
 
 
-def is_correct_file(file):
+def is_correct_file(file) -> bool:
     """Проверка, что файл существует"""
     if not file.exists():
         print(f"Ошибка: Файл {file} не найден.")
     return file.exists()
 
 
-def set_output(file, ext=None):
+def set_output(file, ext=None) -> Path:
     """Составление имени измененного файла"""
     if not ext:
         ext = file.suffix[1:]
 
-    filename = file.stem
-    path_dir = Path(f'{file.resolve().with_suffix('')}_renders\\')
+    filename: str = file.stem
+    path_dir: Path = Path(f'{file.resolve().with_suffix("")}_renders\\')
     path_dir.mkdir(exist_ok=True)
-    output = path_dir / f'{filename}.{ext}'
+    output: Path = path_dir / f'{filename}.{ext}'
 
-    copy_number = 0
+    copy_number: int = 0
     while output.exists():
         copy_number += 1
         output = output.with_stem(f'{filename}_{copy_number}')
     return output
 
 
-def is_correct_file_and_ext(file, ext=None):
+def is_correct_file_and_ext(file, ext=None) -> bool:
     """Проверка на корректоность файла и аудиоформата"""
     if not is_correct_file(file):
         return False
