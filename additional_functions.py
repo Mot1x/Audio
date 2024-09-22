@@ -92,8 +92,8 @@ def set_output(file, ext=None):
     filename = file.stem
     path_dir = Path(f'{file.resolve().with_suffix('')}_renders\\')
     path_dir.mkdir(exist_ok=True)
-    Path(f'{path_dir}{filename}.{ext}')
     output = path_dir / f'{filename}.{ext}'
+
     copy_number = 0
     while output.exists():
         copy_number += 1
