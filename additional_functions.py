@@ -68,7 +68,7 @@ def print_fail_message(command: str) -> None:
         f'Использование команды: {command_usage[command]}')
 
 
-def run_cmd(command: str) -> int:
+def run_cmd(command: list[str]) -> int:
     """Запуск процесса с командой"""
     p = subprocess.Popen(command, stderr=subprocess.PIPE)
     p.communicate()

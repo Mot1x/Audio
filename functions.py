@@ -198,14 +198,14 @@ class FFmpeg:
         else:
             print(f'Такой команды нет. Существующие команды: {", ".join(comm_us.keys())}')
 
-    def undo(self, count=1) -> bool | Path:
+    def undo(self, count=1) -> Path | Exception:
         """Отмена изменений"""
         count: int = int(count)
 
         if self._is_simple:
             raise Exception('Опция отмены недоступна в режиме простого редактирования.')
         if count < 0:
-            return False
+            raise Exception(f'Отрицательное число изменения.')
         if count > len(self._history):
             raise Exception(f'Для отмены доступно {len(self._history)} < {count} действий.')
         for _ in range(count):
@@ -214,14 +214,14 @@ class FFmpeg:
         self._current_path = self._history[-1]
         return self._current_path
 
-    def redo(self, count=1) -> bool | Path:
+    def redo(self, count=1) -> Path | Exception:
         """Возврат отменённых изменений"""
         count: int = int(count)
 
         if self._is_simple:
             raise Exception('Опция возврата недоступна в режиме простого редактирования.')
         if count < 0:
-            return False
+            raise Exception(f'Отрицательное число изменения.')
         if count > len(self._redo_history):
             raise Exception(f'Для возврата доступно {len(self._redo_history)} < {count} действий.')
         for _ in range(count):
