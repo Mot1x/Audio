@@ -1,6 +1,10 @@
+import sys
+from PyQt6.QtWidgets import QApplication
+
 from functions import FFmpeg
 import argparse
 import additional_functions
+import mainWindow
 
 
 def parse_args() -> argparse.Namespace:
@@ -34,4 +38,15 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = mainWindow.MainWindow()
+    window.show()
+    app.exec()
     main()
+
+    # app = QApplication(sys.argv)
+    # window = mainWindow.MainWindow()
+    # window.show()
+    # main()
+    #
+    # sys.exit(app.exec())
