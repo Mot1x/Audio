@@ -42,11 +42,3 @@ if __name__ == "__main__":
     window = mainWindow.MainWindow()
     window.show()
     app.exec()
-    main()
-
-    # app = QApplication(sys.argv)
-    # window = mainWindow.MainWindow()
-    # window.show()
-    # main()
-    #
-    # sys.exit(app.exec())
