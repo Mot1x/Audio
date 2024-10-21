@@ -20,21 +20,21 @@ command_descriptions = {
 }
 
 command_usage = {
-    'convert': f'convert [ext], где ext - один из доступных форматов ({", ".join(exts)}).',
-    'cut': f'cut [start] [stop], где start - начало обрезки, stop - конец обрезки.',
-    'volume': f'volume [vol], где vol - громкость в процентах (1 = 100%).',
-    'speed': f'speed [s], где s - скорость в процентах (1 = 100%).',
-    'render': f'render [path], где path - абсолютный путь к итоговому файлу.',
-    'undo': f'undo [count], где count > 0 - количество изменений, которое необходимо отменить.',
-    'redo': f'redo [count], где count > 0 - количество изменений, которое необходимо возвратить.',
-    'quit': f'quit, и всё)))',
     'help': f'help [command], где command - это команда, справка о которой Вас интересует. Если command не задано, '
             f'тогда будет выведена справка обо всех коммандах.',
+    'read_file': f'read_file [path], где path - путь к файлу с инструкцией.',
+    'render': f'render [path], где path - абсолютный путь к итоговому файлу.',
+    'overlay': f'overlay [other_file], где other_file - путь к другому файлу.',
     'splice': f'splice [other_file] [side], где other_file - путь к другому файлу, side - r или l '
               f'(справа или слева присоединение другого файла).',
-    'overlay': f'overlay [other_file], где other_file - путь к другому файлу.',
-    'read_file': f'read_file [path], где path - путь к файлу с инструкцией.',
-    'resample_speed': f'resample_speed [s], где s - скорость в процентах (1 = 100%).'
+    'cut': f'cut [start] [stop], где start - начало обрезки, stop - конец обрезки.',
+    'convert': f'convert [ext], где ext - один из доступных форматов ({", ".join(exts)}).',
+    'volume': f'volume [vol], где vol - громкость в процентах (1 = 100%).',
+    'speed': f'speed [s], где s - скорость в процентах (1 = 100%).',
+    'resample_speed': f'resample_speed [s], где s - скорость в процентах (1 = 100%).',
+    'undo': f'undo [count], где count > 0 - количество изменений, которое необходимо отменить.',
+    'redo': f'redo [count], где count > 0 - количество изменений, которое необходимо возвратить.',
+    'quit': f'quit, и всё)))'
 }
 
 

@@ -16,6 +16,38 @@ class FFmpeg:
         self._history: list[Path] = [Path(self._file)]
         self._redo_history: list[Path] = []
         self._is_simple: bool = is_simple
+
+    def execute_in_window(self, command: str, *args):
+        try:
+            if command == 'quit':
+                sys.exit()
+
+            elif command == 'read_file':
+                self.read_file(*args)
+
+            elif command == 'help':
+                self.help(*args)
+
+            elif command in additional_functions.command_usage.keys():
+                local_vars = {'file': self, 'args': args}
+                exec(f'state = file.{command}(*args)', globals(), local_vars)
+                state = local_vars.get('state')
+
+                if state:
+                    if command not in ['undo', 'redo']:
+                        self._redo_history.clear()
+                    print(f'Ваш файл: {state}')
+                    return
+
+                additional_functions.print_fail_message(command)
+                return
+            else:
+                print(f'{command} {" ".join(args)}: Такой команды нет. '
+                      f'Существующие команды: {", ".join(additional_functions.command_usage.keys())}')
+
+        except Exception as e:
+            print(f"Ошибка: {e}")
+            additional_functions.print_fail_message(command)
     
     def execute(self, command: str, req_args=None) -> None:
         """Выполнение command"""

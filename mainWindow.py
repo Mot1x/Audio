@@ -30,7 +30,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.file = None
         self.setWindowTitle("Аудиоредактор")
-        self.setFixedSize(QSize(800, 600))
+        self.setFixedSize(QSize(900, 860))
 
         self.label1 = QLabel(self)
         self.label1.setText("Введите путь к аудио")
@@ -72,21 +72,39 @@ class MainWindow(QMainWindow):
         for func in additional_functions.command_usage.keys():
             button = QPushButton(func, self)
             button.setGeometry(50, y, 200, 30)
-            input_button = QLineEdit(self)
-            input_button.setGeometry(300, y, 400, 30)
-
-            button.clicked.connect(partial(self.execute_command, func, input_button))
-
+            # функции одного короткого аргумента
+            if func in ['convert', 'volume', 'speed', 'undo', 'redo', 'resample_speed']:
+                input_button = QLineEdit(self)
+                input_button.setGeometry(300, y, 40, 30)
+                button.clicked.connect(partial(self.execute_command, func, input_button))
+                self.buttons_inputs.append(input_button)
+            # функции одного длинного аргумента
+            elif func in ['render', 'help', 'overlay', 'read_file']:
+                input_button = QLineEdit(self)
+                input_button.setGeometry(300, y, 400, 30)
+                button.clicked.connect(partial(self.execute_command, func, input_button))
+                self.buttons_inputs.append(input_button)
+            # функции двух аргументов
+            elif func in ['cut', 'splice']:
+                input_button1 = QLineEdit(self)
+                input_button1.setGeometry(300, y, 170, 30)
+                self.buttons_inputs.append(input_button1)
+                input_button2 = QLineEdit(self)
+                input_button2.setGeometry(500, y, 170, 30)
+                button.clicked.connect(partial(self.execute_command, func, input_button1, input_button2))
+                self.buttons_inputs.append(input_button2)
+            # функция без аргументов
+            elif func in ['quit']:
+                input_button = QLineEdit(self)
+                input_button.setGeometry(300, y, 0, 30)
+                button.clicked.connect(partial(self.execute_command, func, input_button))
+                self.buttons_inputs.append(input_button)
             self.buttons.append(button)
-            self.buttons_inputs.append(input_button)
             y += 40
 
-    def execute_command(self, command, input_button):
+    def execute_command(self, command, input_button1, input_button2=None):
         if self.file:
-            self.file.execute(command, input_button.text())
-
-
-
-
-
-
+            args = [input_button1.text()]
+            if input_button2:
+                args.append(input_button2.text())
+            self.file.execute_in_window(command, *args)
