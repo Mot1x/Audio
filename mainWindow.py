@@ -30,7 +30,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.file = None
         self.setWindowTitle("Аудиоредактор")
-        self.setFixedSize(QSize(800, 700))
+        self.setFixedSize(QSize(800, 750))
 
         self.label1 = QLabel(self)
         self.label1.setText("Введите путь к аудио")
@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
                 button = QPushButton(func, self)
                 button.setGeometry(50, y, 200, 30)
                 input_button = QLineEdit(self)
-                input_button.setGeometry(300, y, 400, 30)
+                input_button.setGeometry(300, y, 370, 30)
                 button.clicked.connect(partial(self.execute_command, func, input_button))
                 self.buttons_inputs.append(input_button)
                 y += 40
@@ -126,4 +126,5 @@ class MainWindow(QMainWindow):
             args = [input_button1.text()]
             if input_button2:
                 args.append(input_button2.text())
-            self.file.execute_in_window(command, *args)
+            result = self.file.execute_in_window(command, *args)
+            self.message_label.setText(result)

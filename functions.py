@@ -23,10 +23,10 @@ class FFmpeg:
                 sys.exit()
 
             elif command == 'read_file':
-                self.read_file(*args)
+                result = self.read_file(*args)
 
             elif command == 'help':
-                self.help(*args)
+                result = self.help(*args)
 
             elif command in additional_functions.command_usage.keys():
                 local_vars = {'file': self, 'args': args}
@@ -36,18 +36,18 @@ class FFmpeg:
                 if state:
                     if command not in ['undo', 'redo']:
                         self._redo_history.clear()
-                    print(f'Ваш файл: {state}')
-                    return
-
-                additional_functions.print_fail_message(command)
-                return
+                    result = f'Ваш файл: {state}'
+                else:
+                    result = additional_functions.print_fail_message(command)
             else:
-                print(f'{command} {" ".join(args)}: Такой команды нет. '
-                      f'Существующие команды: {", ".join(additional_functions.command_usage.keys())}')
+                result = f'{command} {" ".join(args)}: Такой команды нет. ' \
+                         f'Существующие команды: {", ".join(additional_functions.command_usage.keys())}'
 
         except Exception as e:
-            print(f"Ошибка: {e}")
+            result = f"Ошибка: {e}"
             additional_functions.print_fail_message(command)
+
+        return result
     
     def execute(self, command: str, req_args=None) -> None:
         """Выполнение command"""
@@ -215,7 +215,7 @@ class FFmpeg:
             additional_functions.run_cmd(command)
             return Path(path)
 
-    def help(self, command=None) -> None:
+    def help(self, command=None) -> str:
         """Вывод справки с командами"""
         comm_descr: dict = additional_functions.command_descriptions
         comm_us: dict = additional_functions.command_usage
@@ -225,10 +225,10 @@ class FFmpeg:
                     f'{command} - {comm_descr[command]}\nИспользование: {comm_us[command]}\n')
 
         elif command in comm_descr.keys():
-            print(f'{command} - {comm_descr[command]}\nИспользование: {comm_us[command]}')
+            return f'{command} - {comm_descr[command]}\nИспользование: {comm_us[command]}'
 
         else:
-            print(f'Такой команды нет. Существующие команды: {", ".join(comm_us.keys())}')
+            return f'Такой команды нет. Существующие команды: {", ".join(comm_us.keys())}'
 
     def undo(self, count=1) -> Path | Exception:
         """Отмена изменений"""
