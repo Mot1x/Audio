@@ -14,27 +14,47 @@ command_descriptions = {
     'quit': f'Выход из утилиты.',
     'help': f'Справка по командам.',
     'splice': f'Склейка текущего и другого файлов',
+    'fade_in': f'нарастание звука',
+    'fade_out': f'снижение звука',
     'overlay': f'Накладка другого файла',
     'read_file': f'Чтение инструкций из файла',
     'resample_speed': f'Изменяет скорость аудиофайла с изменением тональности.'
 }
 
 command_usage = {
-    'convert': f'convert [ext], где ext - один из доступных форматов ({", ".join(exts)}).',
-    'cut': f'cut [start] [stop], где start - начало обрезки, stop - конец обрезки.',
-    'volume': f'volume [vol], где vol - громкость в процентах (1 = 100%).',
-    'speed': f'speed [s], где s - скорость в процентах (1 = 100%).',
-    'render': f'render [path], где path - абсолютный путь к итоговому файлу.',
-    'undo': f'undo [count], где count > 0 - количество изменений, которое необходимо отменить.',
-    'redo': f'redo [count], где count > 0 - количество изменений, которое необходимо возвратить.',
-    'quit': f'quit, и всё)))',
     'help': f'help [command], где command - это команда, справка о которой Вас интересует. Если command не задано, '
             f'тогда будет выведена справка обо всех коммандах.',
+    'read_file': f'read_file [path], где path - путь к файлу с инструкцией.',
+    'render': f'render [path], где path - абсолютный путь к итоговому файлу.',
+    'overlay': f'overlay [other_file], где other_file - путь к другому файлу.',
     'splice': f'splice [other_file] [side], где other_file - путь к другому файлу, side - r или l '
               f'(справа или слева присоединение другого файла).',
-    'overlay': f'overlay [other_file], где other_file - путь к другому файлу.',
-    'read_file': f'read_file [path], где path - путь к файлу с инструкцией.',
-    'resample_speed': f'resample_speed [s], где s - скорость в процентах (1 = 100%).'
+    'cut': f'cut [start] [stop], где start - начало обрезки, stop - конец обрезки.',
+    'fade_in': f'fade_in [start] [time], где start - начало, time - время, за которое звук доберет мощность',
+    'fade_out': f'снижение звука, где start - начало, time - время, за которое звук убавит мощность',
+    'convert': f'convert [ext], где ext - один из доступных форматов ({", ".join(exts)}).',
+    'volume': f'volume [vol], где vol - громкость в процентах (1 = 100%).',
+    'speed': f'speed [s], где s - скорость в процентах (1 = 100%).',
+    'resample_speed': f'resample_speed [s], где s - скорость в процентах (1 = 100%).',
+    'undo': f'undo [count], где count > 0 - количество изменений, которое необходимо отменить.',
+    'redo': f'redo [count], где count > 0 - количество изменений, которое необходимо возвратить.',
+    'quit': f'quit, и всё)))'
+}
+
+command_arguments = {
+    'read_file': ['Выберите файл'],
+    'render': ['Выберите файл'],
+    'overlay': ['Выберите файл'],
+    'splice': ['Выберите файл', 'сторона'],
+    'cut': ['начало', 'конец'],
+    'fade_in': ['начало', 'длительность'],
+    'fade_out': ['начало', 'длительность'],
+    'convert': ['расширение'],
+    'volume': ['громкость'],
+    'speed': ['скорость'],
+    'resample_speed': ['скорость'],
+    'undo': ['количество'],
+    'redo': ['количество']
 }
 
 
@@ -66,6 +86,15 @@ def print_fail_message(command: str) -> None:
         f'Команда не выполнилась. Проверьте существование файла и разрешение '
         f'(подходящие разрешения: {", ".join(exts)}), а также аргументы.\n'
         f'Использование команды: {command_usage[command]}')
+
+
+def return_fail_message(command: str) -> str:
+    """Вывод сообщения об ошибке"""
+    if command == '':
+        return f'Не было дано команды.'
+    return  (f'Команда не выполнилась. '
+             f'Проверьте существование файла и разрешение подходящие разрешения: {", ".join(exts)}), '
+             f'а также аргументы.')
 
 
 def run_cmd(command: list[str]) -> int:

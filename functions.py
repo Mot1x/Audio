@@ -16,6 +16,37 @@ class FFmpeg:
         self._history: list[Path] = [Path(self._file)]
         self._redo_history: list[Path] = []
         self._is_simple: bool = is_simple
+
+    def execute_in_window(self, command: str, *args):
+        try:
+            if command == 'quit':
+                sys.exit()
+
+            elif command == 'read_file':
+                result = self.read_file(*args)
+
+            elif command == 'help':
+                result = self.help(*args)
+
+            elif command in additional_functions.command_usage.keys():
+                local_vars = {'file': self, 'args': args}
+                exec(f'state = file.{command}(*args)', globals(), local_vars)
+                state = local_vars.get('state')
+
+                if state:
+                    if command not in ['undo', 'redo']:
+                        self._redo_history.clear()
+                    result = f'Изменение выполнено. Ваш файл: {state}'
+                else:
+                    result = additional_functions.return_fail_message(command)
+            else:
+                result = f'{command} {" ".join(args)}: Такой команды нет. ' \
+                         f'Существующие команды: {", ".join(additional_functions.command_usage.keys())}'
+
+        except Exception as e:
+            result = f"Ошибка: {e}" + "\n" + additional_functions.return_fail_message(command)
+
+        return result
     
     def execute(self, command: str, req_args=None) -> None:
         """Выполнение command"""
@@ -146,6 +177,32 @@ class FFmpeg:
                 self._add_to_history(output)
                 return output
 
+    def fade_in(self, start, time) -> Path:
+        """Постепенный набор полной громкости"""
+        if additional_functions.is_correct_file_and_ext(self._current_path):
+            output: Path = additional_functions.set_output(self._file)
+            command: list[str] = [FFmpeg._cmds.resolve(),
+                "-i", self._current_path.resolve(),
+                "-af", "afade=t=in:st=" + str(start) + ":d=" + str(time),
+                '-y', output.resolve()]
+
+        if additional_functions.run_cmd(command) == 0:
+            self._add_to_history(output)
+            return output
+
+    def fade_out(self, start, time) -> Path:
+        """Постепенный набор полной громкости"""
+        if additional_functions.is_correct_file_and_ext(self._current_path):
+            output: Path = additional_functions.set_output(self._file)
+            command: list[str] = [FFmpeg._cmds.resolve(),
+                                  "-i", self._current_path.resolve(),
+                                  "-af", "afade=t=out:st=" + str(start) + ":d=" + str(time),
+                                  '-y', output.resolve()]
+
+        if additional_functions.run_cmd(command) == 0:
+            self._add_to_history(output)
+            return output
+
     def resample_speed(self, speed=1) -> Path:
         """Изменение скорости с изменением тональности"""
         if additional_functions.is_correct_file_and_ext(self._current_path):
@@ -183,7 +240,7 @@ class FFmpeg:
             additional_functions.run_cmd(command)
             return Path(path)
 
-    def help(self, command=None) -> None:
+    def help(self, command=None) -> str:
         """Вывод справки с командами"""
         comm_descr: dict = additional_functions.command_descriptions
         comm_us: dict = additional_functions.command_usage
@@ -193,10 +250,10 @@ class FFmpeg:
                     f'{command} - {comm_descr[command]}\nИспользование: {comm_us[command]}\n')
 
         elif command in comm_descr.keys():
-            print(f'{command} - {comm_descr[command]}\nИспользование: {comm_us[command]}')
+            return f'{command} - {comm_descr[command]}\nИспользование: {comm_us[command]}'
 
         else:
-            print(f'Такой команды нет. Существующие команды: {", ".join(comm_us.keys())}')
+            return f'Такой команды нет. Существующие команды: {", ".join(comm_us.keys())}'
 
     def undo(self, count=1) -> Path | Exception:
         """Отмена изменений"""
