@@ -1,5 +1,7 @@
 import argparse
 from functools import partial
+from pathlib import Path
+
 import additional_functions
 import functions
 import secondWindow
@@ -60,11 +62,13 @@ class MainWindow(QMainWindow):
         try:
             parsed_args = parse_args_from_string(input_data)
             self.file = functions.FFmpeg(parsed_args.audio, parsed_args.simple)
-            print(f'Ваш файл: {parsed_args.audio}')
-            self.message_label.setText(f'Ваш файл: {parsed_args.audio}')
+            if not additional_functions.is_correct_file(Path(parsed_args.audio)):
+                self.message_label.setText(f'Файл не существует')
+            else:
+                self.message_label.setText(f'Ваш файл: {parsed_args.audio}')
 
-            self.new_window = secondWindow.SecondWindow(self.file)
-            self.new_window.show()
+                self.new_window = secondWindow.SecondWindow(self.file)
+                self.new_window.show()
 
         except SystemExit:
             print("Ошибка: неверные аргументы")
