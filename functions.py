@@ -45,7 +45,7 @@ class FFmpeg:
 
         except Exception as e:
             result = f"Ошибка: {e}"
-            additional_functions.print_fail_message(command)
+            result = f"Ошибка: {e}" + "\n" + additional_functions.return_fail_message(command)
 
         return result
     
@@ -177,6 +177,32 @@ class FFmpeg:
             if additional_functions.run_cmd(command) == 0:
                 self._add_to_history(output)
                 return output
+
+    def fade_in(self, start, time) -> Path:
+        """Постепенный набор полной громкости"""
+        if additional_functions.is_correct_file_and_ext(self._current_path):
+            output: Path = additional_functions.set_output(self._file)
+            command: list[str] = [FFmpeg._cmds.resolve(),
+                "-i", self._current_path.resolve(),
+                "-af", "afade=t=in:st=" + str(start) + ":d=" + str(time),
+                '-y', output.resolve()]
+
+        if additional_functions.run_cmd(command) == 0:
+            self._add_to_history(output)
+            return output
+
+    def fade_out(self, start, time) -> Path:
+        """Постепенный набор полной громкости"""
+        if additional_functions.is_correct_file_and_ext(self._current_path):
+            output: Path = additional_functions.set_output(self._file)
+            command: list[str] = [FFmpeg._cmds.resolve(),
+                                  "-i", self._current_path.resolve(),
+                                  "-af", "afade=t=out:st=" + str(start) + ":d=" + str(time),
+                                  '-y', output.resolve()]
+
+        if additional_functions.run_cmd(command) == 0:
+            self._add_to_history(output)
+            return output
 
     def resample_speed(self, speed=1) -> Path:
         """Изменение скорости с изменением тональности"""
