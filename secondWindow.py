@@ -5,123 +5,138 @@ from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QMainWindow, QPushButton, QLabel, QLineEdit, QApplication
 
+import functions
+
 
 class SecondWindow(QMainWindow):
-    def __init__(self, file, name_file):
+    def __init__(self, file: functions.FFmpeg, name_file: str):
         super().__init__()
-        self.file = file
-        self.setWindowTitle("Аудиоредактор и изменения")
+        self._file = file
+        self.setWindowTitle("Редактирование аудио")
         self.setFixedSize(QSize(800, 600))
 
-        self.buttons = []
-        self.buttons_inputs = []
-        self.add_button_functions()
+        self._buttons = []
+        self._buttons_inputs = []
+        self._add_button_functions()
 
-        self.lable_current_file = QLabel(self)
-        self.lable_current_file.setGeometry(500, 20, 300, 30)
-        self.lable_current_file.setText(f'Ваш файл: {name_file}')
+        self._lable_current_file = QLabel(self)
+        self._lable_current_file.setGeometry(500, 20, 300, 30)
+        self._lable_current_file.setText(f'Ваш файл: {name_file}')
 
-        self.message_label = QLabel(self)
-        self.message_label.setGeometry(20, 40, 740, 70)
-        self.edit_font()
+        self._message_label = QLabel(self)
+        self._message_label.setGeometry(20, 40, 740, 70)
+        self._edit_font()
 
-    def edit_font(self):
+    def _edit_font(self) -> None:
+        """Настройка шрифта"""
         font = QFont()
         font.setPointSize(12)
-        self.lable_current_file.setFont(font)
-        self.message_label.setFont(font)
-        self.message_label.setFont(font)
+        self._lable_current_file.setFont(font)
+        self._message_label.setFont(font)
+        self._message_label.setFont(font)
 
-    def add_button_functions(self):
+    def _add_button_functions(self) -> None:
+        """Добавлени в окно всех кнопок-функций"""
         y = 140
         k = 500
         for func in additional_functions.command_usage.keys():
-            # функции одного короткого аргумента
+            if func not in ['quit', 'help', 'undo', 'redo']:
+                self._add_button_help(func, y)
+
             if func in ['convert', 'volume', 'speed', 'resample_speed']:
-                button = QPushButton(func, self)
-                button.setGeometry(50, y, 200, 30)
-                input_button = QLineEdit(self)
-                input_button.setGeometry(300, y, 40, 30)
-                button.clicked.connect(partial(self.execute_command, func, input_button))
-                self.buttons.append(button)
-                self.buttons_inputs.append(input_button)
-                button_help = QPushButton("?", self)
-                button_help.setGeometry(20, y, 20, 30)
-                button_help.clicked.connect(partial(self.button_help_was_clicked, func))
-                self.buttons.append(button_help)
-                y += 40
-            # функции одного длинного аргумента
+                self._add_button_for_short_arg_function(func, y)
+
             elif func in ['render', 'overlay', 'read_file']:
-                button = QPushButton(func, self)
-                button.setGeometry(50, y, 200, 30)
-                input_button = QLineEdit(self)
-                input_button.setGeometry(300, y, 370, 30)
-                button.clicked.connect(partial(self.execute_command, func, input_button))
-                self.buttons.append(button)
-                self.buttons_inputs.append(input_button)
-                button_help = QPushButton("?", self)
-                button_help.setGeometry(20, y, 20, 30)
-                button_help.clicked.connect(partial(self.button_help_was_clicked, func))
-                self.buttons.append(button_help)
-                y += 40
-            # функции двух аргументов
+                self._add_button_for_long_arg_function(func, y)
+
             elif func in ['splice']:
-                button = QPushButton(func, self)
-                button.setGeometry(50, y, 200, 30)
-                input_button1 = QLineEdit(self)
-                input_button1.setGeometry(300, y, 170, 30)
-                self.buttons_inputs.append(input_button1)
-                self.buttons.append(button)
-                input_button2 = QLineEdit(self)
-                input_button2.setGeometry(500, y, 170, 30)
-                button.clicked.connect(partial(self.execute_command, func, input_button1, input_button2))
-                self.buttons_inputs.append(input_button2)
-                button_help = QPushButton("?", self)
-                button_help.setGeometry(20, y, 20, 30)
-                button_help.clicked.connect(partial(self.button_help_was_clicked, func))
-                self.buttons.append(button_help)
-                y += 40
-            # функции двух коротких аргументов
+                self._add_button_for_two_long_arg_func(func, y)
+
             elif func in ['cut', 'fade_in', 'fade_out']:
-                button = QPushButton(func, self)
-                button.setGeometry(50, y, 200, 30)
-                input_button1 = QLineEdit(self)
-                input_button1.setGeometry(300, y, 40, 30)
-                self.buttons_inputs.append(input_button1)
-                self.buttons.append(button)
-                input_button2 = QLineEdit(self)
-                input_button2.setGeometry(360, y, 40, 30)
-                button.clicked.connect(partial(self.execute_command, func, input_button1, input_button2))
-                self.buttons_inputs.append(input_button2)
-                button_help = QPushButton("?", self)
-                button_help.setGeometry(20, y, 20, 30)
-                button_help.clicked.connect(partial(self.button_help_was_clicked, func))
-                self.buttons.append(button_help)
-                y += 40
-            # функции одного короткого аргумента, расположенные сверху
+                self._add_button_for_two_short_arg_func(func, y)
+
             elif func in ['undo', 'redo']:
-                button = QPushButton(func, self)
-                button.setGeometry(640, k, 60, 30)
-                input_button = QLineEdit(self)
-                input_button.setGeometry(700, k, 60, 30)
-                button.clicked.connect(partial(self.execute_command, func, input_button))
-                self.buttons_inputs.append(input_button)
-                self.buttons.append(button)
-                button_help = QPushButton("?", self)
-                button_help.setGeometry(610, k, 20, 30)
-                button_help.clicked.connect(partial(self.button_help_was_clicked, func))
-                self.buttons.append(button_help)
+                self._add_button_redo_or_undo(k, func)
                 k += 40
+            if func not in ['quit', 'help', 'undo', 'redo']:
+                y += 40
 
-    def execute_command(self, command, input_button1, input_button2=None):
-        if self.file:
-            args = [input_button1.text()]
-            if input_button2:
-                args.append(input_button2.text())
-            result = self.file.execute_in_window(command, *args)
-            self.message_label.setText(result)
+    def _execute_command(self, command: str, input_button1: QLineEdit, input_button2: QLineEdit = None) -> None:
+        """Выполнение команды при нажатии кнопки"""
+        args = [input_button1.text()]
+        if input_button2:
+            args.append(input_button2.text())
+        result = self._file.execute_in_window(command, *args)
+        self._message_label.setText(result)
 
-    def button_help_was_clicked(self, command):
-        if self.file:
-            result = self.file.execute_in_window("help", command)
-            self.message_label.setText(result)
+    def _add_button_help(self, func: str, y: int) -> None:
+        """Создание кнопки help для конкретной команды"""
+        button_help = QPushButton("?", self)
+        button_help.setGeometry(20, y, 20, 30)
+        button_help.clicked.connect(partial(self._button_help_was_clicked, func))
+        self._buttons.append(button_help)
+
+    def _button_help_was_clicked(self, command: str) -> None:
+        """Вывод help для конкретной команды"""
+        result = self._file.execute_in_window("help", command)
+        self._message_label.setText(result)
+
+    def _add_button_redo_or_undo(self, k: int, func: str) -> None:
+        """Кнопки для функций в правом нижнем углу"""
+        button = QPushButton(func, self)
+        button.setGeometry(640, k, 60, 30)
+        input_button = QLineEdit(self)
+        input_button.setGeometry(700, k, 60, 30)
+        button.clicked.connect(partial(self._execute_command, func, input_button))
+        self._buttons_inputs.append(input_button)
+        self._buttons.append(button)
+        button_help = QPushButton("?", self)
+        button_help.setGeometry(610, k, 20, 30)
+        button_help.clicked.connect(partial(self._button_help_was_clicked, func))
+        self._buttons.append(button_help)
+
+    def _add_button_for_short_arg_function(self, func: str, y: int) -> None:
+        """Кнопки для функций одного короткого аргумента"""
+        button = QPushButton(func, self)
+        button.setGeometry(50, y, 200, 30)
+        input_button = QLineEdit(self)
+        input_button.setGeometry(300, y, 40, 30)
+        button.clicked.connect(partial(self._execute_command, func, input_button))
+        self._buttons.append(button)
+        self._buttons_inputs.append(input_button)
+
+    def _add_button_for_long_arg_function(self, func: str, y: int) -> None:
+        """Кнопки для функций одного длинного аргумента"""
+        button = QPushButton(func, self)
+        button.setGeometry(50, y, 200, 30)
+        input_button = QLineEdit(self)
+        input_button.setGeometry(300, y, 370, 30)
+        button.clicked.connect(partial(self._execute_command, func, input_button))
+        self._buttons.append(button)
+        self._buttons_inputs.append(input_button)
+
+    def _add_button_for_two_short_arg_func(self, func: str, y: int) -> None:
+        """Кнопки для функций двух коротких аргументов"""
+        button = QPushButton(func, self)
+        button.setGeometry(50, y, 200, 30)
+        input_button1 = QLineEdit(self)
+        input_button1.setGeometry(300, y, 40, 30)
+        self._buttons_inputs.append(input_button1)
+        self._buttons.append(button)
+        input_button2 = QLineEdit(self)
+        input_button2.setGeometry(360, y, 40, 30)
+        button.clicked.connect(partial(self._execute_command, func, input_button1, input_button2))
+        self._buttons_inputs.append(input_button2)
+
+    def _add_button_for_two_long_arg_func(self, func: str, y: int) -> None:
+        """Кнопки для функций двух длинных аргументов"""
+        button = QPushButton(func, self)
+        button.setGeometry(50, y, 200, 30)
+        input_button1 = QLineEdit(self)
+        input_button1.setGeometry(300, y, 170, 30)
+        self._buttons_inputs.append(input_button1)
+        self._buttons.append(button)
+        input_button2 = QLineEdit(self)
+        input_button2.setGeometry(500, y, 170, 30)
+        button.clicked.connect(partial(self._execute_command, func, input_button1, input_button2))
+        self._buttons_inputs.append(input_button2)
