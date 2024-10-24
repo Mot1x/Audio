@@ -36,15 +36,14 @@ class FFmpeg:
                 if state:
                     if command not in ['undo', 'redo']:
                         self._redo_history.clear()
-                    result = f'Ваш файл: {state}'
+                    result = f'Изменение выполнено. Ваш файл: {state}'
                 else:
-                    result = additional_functions.print_fail_message(command)
+                    result = additional_functions.return_fail_message(command)
             else:
                 result = f'{command} {" ".join(args)}: Такой команды нет. ' \
                          f'Существующие команды: {", ".join(additional_functions.command_usage.keys())}'
 
         except Exception as e:
-            result = f"Ошибка: {e}"
             result = f"Ошибка: {e}" + "\n" + additional_functions.return_fail_message(command)
 
         return result

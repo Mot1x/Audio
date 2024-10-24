@@ -41,6 +41,22 @@ command_usage = {
     'quit': f'quit, и всё)))'
 }
 
+command_arguments = {
+    'read_file': ['путь'],
+    'render': ['путь'],
+    'overlay': ['путь'],
+    'splice': ['путь', 'сторона'],
+    'cut': ['начало', 'конец'],
+    'fade_in': ['начало', 'длительность'],
+    'fade_out': ['начало', 'длительность'],
+    'convert': ['расширение'],
+    'volume': ['громкость'],
+    'speed': ['скорость'],
+    'resample_speed': ['скорость'],
+    'undo': ['количество'],
+    'redo': ['количество']
+}
+
 
 def get_command_and_args(request: str) -> tuple[str, list[str]]:
     """Деление запроса на команду и аргументы"""

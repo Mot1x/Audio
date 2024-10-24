@@ -1,8 +1,8 @@
 from functools import partial
 import additional_functions
 
-from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QFont
+from PyQt6.QtCore import QSize, QTimer
+from PyQt6.QtGui import QFont, QPalette, QColor
 from PyQt6.QtWidgets import QMainWindow, QPushButton, QLabel, QLineEdit, QApplication
 
 import functions
@@ -21,7 +21,7 @@ class SecondWindow(QMainWindow):
 
         self._lable_current_file = QLabel(self)
         self._lable_current_file.setGeometry(500, 20, 300, 30)
-        self._lable_current_file.setText(f'Ваш файл: {name_file}')
+        self._lable_current_file.setText(f'Стартовый файл: {name_file}')
 
         self._message_label = QLabel(self)
         self._message_label.setGeometry(20, 40, 740, 70)
@@ -61,13 +61,21 @@ class SecondWindow(QMainWindow):
             if func not in ['quit', 'help', 'undo', 'redo']:
                 y += 40
 
-    def _execute_command(self, command: str, input_button1: QLineEdit, input_button2: QLineEdit = None) -> None:
+    def _execute_command(self, command: str, button: QPushButton, input_button1: QLineEdit, input_button2: QLineEdit = None) -> None:
         """Выполнение команды при нажатии кнопки"""
+        self._highlight_button(button)
+
         args = [input_button1.text()]
         if input_button2:
             args.append(input_button2.text())
         result = self._file.execute_in_window(command, *args)
         self._message_label.setText(result)
+
+    def _highlight_button(self, button: QPushButton) -> None:
+        """Изменение цвета кнопки на 3 секунды"""
+        original_style = button.styleSheet()
+        button.setStyleSheet("background-color: green;")
+        QTimer.singleShot(1000, lambda: button.setStyleSheet(original_style))
 
     def _add_button_help(self, func: str, y: int) -> None:
         """Создание кнопки help для конкретной команды"""
@@ -84,14 +92,15 @@ class SecondWindow(QMainWindow):
     def _add_button_redo_or_undo(self, k: int, func: str) -> None:
         """Кнопки для функций в правом нижнем углу"""
         button = QPushButton(func, self)
-        button.setGeometry(640, k, 60, 30)
+        button.setGeometry(600, k, 60, 30)
         input_button = QLineEdit(self)
-        input_button.setGeometry(700, k, 60, 30)
-        button.clicked.connect(partial(self._execute_command, func, input_button))
+        input_button.setGeometry(670, k, 100, 30)
+        input_button.setPlaceholderText(additional_functions.command_arguments[func][0])
+        button.clicked.connect(partial(self._execute_command, func, button, input_button))
         self._buttons_inputs.append(input_button)
         self._buttons.append(button)
         button_help = QPushButton("?", self)
-        button_help.setGeometry(610, k, 20, 30)
+        button_help.setGeometry(570, k, 20, 30)
         button_help.clicked.connect(partial(self._button_help_was_clicked, func))
         self._buttons.append(button_help)
 
@@ -100,8 +109,9 @@ class SecondWindow(QMainWindow):
         button = QPushButton(func, self)
         button.setGeometry(50, y, 200, 30)
         input_button = QLineEdit(self)
-        input_button.setGeometry(300, y, 40, 30)
-        button.clicked.connect(partial(self._execute_command, func, input_button))
+        input_button.setGeometry(300, y, 100, 30)
+        input_button.setPlaceholderText(additional_functions.command_arguments[func][0])
+        button.clicked.connect(partial(self._execute_command, func, button, input_button))
         self._buttons.append(button)
         self._buttons_inputs.append(input_button)
 
@@ -111,7 +121,8 @@ class SecondWindow(QMainWindow):
         button.setGeometry(50, y, 200, 30)
         input_button = QLineEdit(self)
         input_button.setGeometry(300, y, 370, 30)
-        button.clicked.connect(partial(self._execute_command, func, input_button))
+        input_button.setPlaceholderText(additional_functions.command_arguments[func][0])
+        button.clicked.connect(partial(self._execute_command, func, button, input_button))
         self._buttons.append(button)
         self._buttons_inputs.append(input_button)
 
@@ -120,12 +131,14 @@ class SecondWindow(QMainWindow):
         button = QPushButton(func, self)
         button.setGeometry(50, y, 200, 30)
         input_button1 = QLineEdit(self)
-        input_button1.setGeometry(300, y, 40, 30)
+        input_button1.setGeometry(300, y, 100, 30)
+        input_button1.setPlaceholderText(additional_functions.command_arguments[func][0])
         self._buttons_inputs.append(input_button1)
         self._buttons.append(button)
         input_button2 = QLineEdit(self)
-        input_button2.setGeometry(360, y, 40, 30)
-        button.clicked.connect(partial(self._execute_command, func, input_button1, input_button2))
+        input_button2.setGeometry(420, y, 100, 30)
+        input_button2.setPlaceholderText(additional_functions.command_arguments[func][1])
+        button.clicked.connect(partial(self._execute_command, func, button, input_button1, input_button2))
         self._buttons_inputs.append(input_button2)
 
     def _add_button_for_two_long_arg_func(self, func: str, y: int) -> None:
@@ -134,9 +147,11 @@ class SecondWindow(QMainWindow):
         button.setGeometry(50, y, 200, 30)
         input_button1 = QLineEdit(self)
         input_button1.setGeometry(300, y, 170, 30)
+        input_button1.setPlaceholderText(additional_functions.command_arguments[func][0])
         self._buttons_inputs.append(input_button1)
         self._buttons.append(button)
         input_button2 = QLineEdit(self)
         input_button2.setGeometry(500, y, 170, 30)
-        button.clicked.connect(partial(self._execute_command, func, input_button1, input_button2))
+        input_button2.setPlaceholderText(additional_functions.command_arguments[func][1])
+        button.clicked.connect(partial(self._execute_command, func, button, input_button1, input_button2))
         self._buttons_inputs.append(input_button2)
