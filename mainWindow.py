@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
             else:
                 self.message_label.setText(f'Ваш файл: {parsed_args.audio}')
 
-                self.new_window = secondWindow.SecondWindow(self.file)
+                self.new_window = secondWindow.SecondWindow(self.file, parsed_args.audio)
                 self.new_window.show()
 
         except SystemExit:

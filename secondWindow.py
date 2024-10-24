@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QMainWindow, QPushButton, QLabel, QLineEdit, QApplic
 
 
 class SecondWindow(QMainWindow):
-    def __init__(self, file):
+    def __init__(self, file, name_file):
         super().__init__()
         self.file = file
         self.setWindowTitle("Аудиоредактор и изменения")
@@ -17,12 +17,23 @@ class SecondWindow(QMainWindow):
         self.buttons_inputs = []
         self.add_button_functions()
 
+        self.lable_current_file = QLabel(self)
+        self.lable_current_file.setGeometry(500, 20, 300, 30)
+        self.lable_current_file.setText(f'Ваш файл: {name_file}')
+
         self.message_label = QLabel(self)
-        self.message_label.setGeometry(60, 20, 740, 70)
-        self.message_label.setText("Строка состояния")
+        self.message_label.setGeometry(20, 40, 740, 70)
+        self.edit_font()
+
+    def edit_font(self):
+        font = QFont()
+        font.setPointSize(12)
+        self.lable_current_file.setFont(font)
+        self.message_label.setFont(font)
+        self.message_label.setFont(font)
 
     def add_button_functions(self):
-        y = 80
+        y = 140
         k = 500
         for func in additional_functions.command_usage.keys():
             # функции одного короткого аргумента
@@ -97,7 +108,7 @@ class SecondWindow(QMainWindow):
                 self.buttons_inputs.append(input_button)
                 self.buttons.append(button)
                 button_help = QPushButton("?", self)
-                button_help.setGeometry(20, k, 20, 30)
+                button_help.setGeometry(610, k, 20, 30)
                 button_help.clicked.connect(partial(self.button_help_was_clicked, func))
                 self.buttons.append(button_help)
                 k += 40
